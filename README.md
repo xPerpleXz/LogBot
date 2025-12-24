@@ -316,8 +316,7 @@ Wir folgen einem [Code of Conduct](CODE_OF_CONDUCT.md). Bitte lies ihn bevor du 
 
 ### Hosting Partners
 - [Railway.app](https://railway.app/) - Cloud Hosting
-- [Oracle Cloud](https://www.oracle.com/cloud/) - Free Tier
-- [Render.com](https://render.com/) - Free Hosting
+
 
 ### Special Thanks
 - Discord.py Community
