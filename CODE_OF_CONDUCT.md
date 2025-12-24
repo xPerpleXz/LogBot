@@ -75,7 +75,7 @@ Dieser Code of Conduct kann gelegentlich aktualisiert werden. Änderungen werden
 
 ---
 
-**Letzte Aktualisierung:** Dezember 2024
+**Letzte Aktualisierung:** Dezember 2025
 
 **Maintainer:** xPerpleXz
 
