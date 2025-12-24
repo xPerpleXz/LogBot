@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Discord Log Bot - Professional Log Management System
+
+A comprehensive Discord bot for managing member activity logs with Google Sheets
+integration, automatic payouts calculation, and weekly reporting.
+
+Author: xPerpleXz
+License: MIT
+Version: 1.0.0
+Repository: https://github.com/xPerpleXz/LogBot
+"""
+
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
@@ -11,6 +25,10 @@ import io
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
+__author__ = "xPerpleXz"
+__version__ = "1.0.0"
+__license__ = "MIT"
 
 # Konfiguration
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
@@ -194,32 +212,35 @@ class LogModal(discord.ui.Modal):
                 
                 await interaction.followup.send(embed=confirmation, ephemeral=True)
                 
-# Öffentliche Benachrichtigung in MEHREREN Log-Channels
-log_channel_ids = os.getenv('LOG_CHANNEL_IDS', '')
-if log_channel_ids:
-    # Split IDs (Komma-getrennt)
-    channel_ids = [int(id.strip()) for id in log_channel_ids.split(',') if id.strip()]
-    
-    # Embed erstellen
-    public_embed = discord.Embed(
-        title="📋 Neuer Log-Eintrag",
-        color=discord.Color.gold(),
-        timestamp=datetime.utcnow()
-    )
-    public_embed.add_field(name="Mitglied", value=interaction.user.mention, inline=True)
-    public_embed.add_field(name="Aktion", value=self.action_type, inline=True)
-    public_embed.add_field(name="Betrag", value=f"{amount}€", inline=True)
-    public_embed.set_image(url=image_url)
-    
-    # In ALLE konfigurierten Channels posten
-    for channel_id in channel_ids:
-        log_channel = bot.get_channel(channel_id)
-        if log_channel:
-            try:
-                await log_channel.send(embed=public_embed)
-                print(f"✅ Log gepostet in: {log_channel.name}")
-            except Exception as e:
-                print(f"❌ Fehler beim Posten in Channel {channel_id}: {e}")
+                # Öffentliche Benachrichtigung in MEHREREN Log-Channels
+                try:
+                    log_channel_ids = os.getenv('LOG_CHANNEL_IDS', '')
+                    if log_channel_ids:
+                        # Split IDs (Komma-getrennt)
+                        channel_ids = [int(id.strip()) for id in log_channel_ids.split(',') if id.strip()]
+                        
+                        # Embed erstellen
+                        public_embed = discord.Embed(
+                            title="📋 Neuer Log-Eintrag",
+                            color=discord.Color.gold(),
+                            timestamp=datetime.utcnow()
+                        )
+                        public_embed.add_field(name="Mitglied", value=interaction.user.mention, inline=True)
+                        public_embed.add_field(name="Aktion", value=self.action_type, inline=True)
+                        public_embed.add_field(name="Betrag", value=f"{amount}€", inline=True)
+                        public_embed.set_image(url=image_url)
+                        
+                        # In ALLE konfigurierten Channels posten
+                        for channel_id in channel_ids:
+                            log_channel = bot.get_channel(channel_id)
+                            if log_channel:
+                                try:
+                                    await log_channel.send(embed=public_embed)
+                                    print(f"✅ Log gepostet in: {log_channel.name}")
+                                except Exception as e:
+                                    print(f"❌ Fehler beim Posten in Channel {channel_id}: {e}")
+                except Exception as e:
+                    print(f"❌ Fehler bei Multi-Channel Posting: {e}")
             else:
                 error_embed = discord.Embed(
                     title="❌ Fehler",
