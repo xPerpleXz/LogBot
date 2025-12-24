@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![Discord.py](https://img.shields.io/badge/discord.py-2.3.2-blue.svg)
@@ -11,11 +11,12 @@
 
 **Ein professioneller Discord Bot für Log-Management mit Google Sheets Integration**
 
-Automatische Auszahlungsberechnung • Wöchentliche Reports • Bildverifikation
+Premium Design • Automatische Auszahlungen • Live Dashboard • Bildverifikation
 
 [Features](#-features) •
 [Quick Start](QUICKSTART.md) •
 [Dokumentation](#-dokumentation) •
+[Premium Update](PREMIUM_UPDATE_GUIDE.md) •
 [Deployment](#-deployment-optionen) •
 [Contributing](CONTRIBUTING.md) •
 [Lizenz](#-lizenz)
@@ -28,10 +29,10 @@ Automatische Auszahlungsberechnung • Wöchentliche Reports • Bildverifikatio
 
 > **Erstellt von:** [xPerpleXz](https://github.com/xPerpleXz)  
 > **Lizenz:** MIT  
-> **Version:** 1.0.0  
+> **Version:** 2.0.0 - Premium Edition  
 > **Sprache:** Python 3.11+
 
-Dieser Discord Bot wurde entwickelt, um Mitglieder-Aktivitäten professionell zu tracken, Logs zu verwalten und automatische Auszahlungen zu berechnen - alles mit einer modernen, benutzerfreundlichen Discord UI.
+Dieser Discord Bot wurde entwickelt, um Mitglieder-Aktivitäten professionell zu tracken, Logs zu verwalten und automatische Auszahlungen zu berechnen - alles mit einer modernen, benutzerfreundlichen Discord UI und Premium-Design.
 
 ---
 
@@ -46,9 +47,19 @@ Dieser Discord Bot wurde entwickelt, um Mitglieder-Aktivitäten professionell zu
 - 🔒 **Sicher**: Alle Daten verschlüsselt in Google Sheets
 - ⚡ **Modern**: Button-basierte Interaktion mit Discord UI
 
+### 🎨 Premium Features (v2.0)
+- 💎 **Premium Discord Embeds**: Schöne, farbcodierte Ausgaben mit User Avatars
+- 💰 **Auszahlungs-System**: Automatische DM-Benachrichtigung mit detailliertem Breakdown
+- 📊 **Live Dashboard**: Google Sheets mit automatischen Formeln und Statistiken
+- 📈 **Progress Tracking**: Visuelle Progress Bars für User-Fortschritt
+- 🎨 **Corporate Design**: Konsistente Farb-Palette überall
+- 📜 **Auszahlungs-Historie**: Komplettes Tracking aller Transaktionen
+- 🖼️ **Separater Output Channel**: Dedizierter Channel für Premium Log-Anzeigen
+
 ### Discord Commands
 ```
 /log              - Log einreichen mit Dropdown & Modal
+/auszahlung       - User auszahlen (automatische DM) [NEU in v2.0]
 /wochenbericht    - Wöchentlicher Report (nur Admins)
 /setup            - Sheet Initialisierung (einmalig, Admins)
 /hilfe            - Befehlsübersicht
@@ -61,6 +72,7 @@ Dieser Discord Bot wurde entwickelt, um Mitglieder-Aktivitäten professionell zu
 - 💾 CSV Backup Export
 - 🗑️ Alte Logs löschen
 - 🔄 Automatische Reports
+- 💰 Ein-Klick Auszahlungen mit automatischen DMs
 
 ### Technische Highlights
 - ✅ Base64 Credentials Support (Cloud-ready)
@@ -69,6 +81,7 @@ Dieser Discord Bot wurde entwickelt, um Mitglieder-Aktivitäten professionell zu
 - ✅ Fehlerbehandlung & Logging
 - ✅ Type Hints & Docstrings
 - ✅ Production-ready Code
+- ✅ Premium UI/UX Design
 
 ---
 
@@ -87,7 +100,10 @@ pip install -r requirements.txt
 cp .env.example .env
 # .env bearbeiten mit deinen Credentials
 
-# 4. Bot starten
+# 4. Premium Design anwenden (optional)
+python premium_sheets_designer.py
+
+# 5. Bot starten
 python bot.py
 ```
 
@@ -101,6 +117,35 @@ python bot.py
 
 ---
 
+## 🆕 Neu in Version 2.0 (Premium Edition)
+
+### 💰 Auszahlungs-System
+```discord
+/auszahlung @Username
+```
+- ✅ Automatische Berechnung aus Wochen-Logs
+- ✅ Detaillierte DM an User mit Breakdown
+- ✅ Tracking in Google Sheets
+- ✅ Admin-Bestätigung
+
+### 🎨 Premium Output Channel
+- Separater Channel für schöne Log-Anzeigen
+- Rich Embeds mit User Avatar
+- Progress Bars für Fortschritt
+- Farbcodierte Aktionen
+- Professional Formatting
+
+### 📊 Live Dashboard
+- 📋 Tab 1: Logs (Premium Design)
+- 📊 Tab 2: Dashboard (Live-Formeln)
+- 💰 Tab 3: Auszahlungen (Historie)
+- 🎨 Corporate Color Scheme
+- ⚡ Automatische Updates
+
+**[→ Zum Update Guide](PREMIUM_UPDATE_GUIDE.md)**
+
+---
+
 ## 📋 Voraussetzungen
 
 - Python 3.11 oder höher
@@ -108,7 +153,7 @@ python bot.py
 - Google Cloud Account (kostenlos)
 - Google Sheets API aktiviert
 
-**Detaillierte Setup-Anleitung:** [README.md - Installation](#installation)
+**Detaillierte Setup-Anleitung:** [QUICKSTART.md](QUICKSTART.md)
 
 ---
 
@@ -117,9 +162,9 @@ python bot.py
 ### Hauptdokumentation
 | Dokument | Beschreibung | Für wen? |
 |----------|--------------|----------|
-| [START_HIER.md](START_HIER.md) | Projekt-Übersicht | Alle |
-| [QUICKSTART.md](QUICKSTART.md) | 15-Min Schnellstart | Anfänger |
 | [README.md](README.md) | Vollständige Docs | Alle |
+| [QUICKSTART.md](QUICKSTART.md) | 15-Min Schnellstart | Anfänger |
+| [PREMIUM_UPDATE_GUIDE.md](PREMIUM_UPDATE_GUIDE.md) | v1.0 → v2.0 Update | Upgrading |
 | [INDEX.md](INDEX.md) | Dokumentations-Index | Navigation |
 | [FAQ.md](FAQ.md) | 30+ häufige Fragen | Troubleshooting |
 
@@ -130,7 +175,6 @@ python bot.py
 | [RENDER_GUIDE.md](RENDER_GUIDE.md) | Render.com | Free | ⭐ Einfach |
 | [ORACLE_CLOUD_GUIDE.md](ORACLE_CLOUD_GUIDE.md) | Oracle | Free 24/7 | ⭐⭐⭐ Mittel |
 | [DOCKER_GUIDE.md](DOCKER_GUIDE.md) | Docker | Variabel | ⭐⭐ Mittel |
-| [KOSTENLOSE_HOSTING_OPTIONEN.md](KOSTENLOSE_HOSTING_OPTIONEN.md) | Vergleich | Alle | Info |
 
 ### Entwickler Docs
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution Guidelines
@@ -164,11 +208,16 @@ cp .env.example .env
 # .env bearbeiten:
 DISCORD_TOKEN=dein_bot_token
 SPREADSHEET_ID=deine_sheet_id
-LOG_CHANNEL_IDS=channel1,channel2
+LOG_OUTPUT_CHANNEL_ID=channel_id  # NEU in v2.0!
 REPORT_CHANNEL_ID=report_channel
 ```
 
-### 4. Dependencies & Start
+### 4. Premium Design (optional)
+```bash
+python premium_sheets_designer.py
+```
+
+### 5. Dependencies & Start
 ```bash
 pip install -r requirements.txt
 python bot.py
@@ -210,6 +259,15 @@ Erstellt Sheet-Struktur automatisch.
 ```
 Zeigt Top 10, Statistiken, Gesamtauszahlung.
 
+**Auszahlung (NEU in v2.0):**
+```
+/auszahlung @Username
+```
+- Berechnet automatisch Wochenguthaben
+- Sendet detaillierte DM an User
+- Speichert in Auszahlungs-Tab
+- Bestätigung an Admin
+
 **Admin Tools (CLI):**
 ```bash
 python admin_tools.py
@@ -222,7 +280,7 @@ Für Backups, Statistiken, Daten-Management.
 
 ### Auszahlungsbeträge ändern
 
-**In `bot.py`, Zeile 24-28:**
+**In `bot.py`, Zeile 28-32:**
 ```python
 PAYMENT_AMOUNTS = {
     'Düngen': 5.00,        # ← Hier anpassen
@@ -239,7 +297,7 @@ Speichern → Bot neu starten → Fertig!
 2. In `ActionSelect` Class neue Option erstellen
 3. Bot neu starten
 
-**Detaillierte Anleitung:** [README.md - Anpassungen](README.md#anpassungen)
+**Detaillierte Anleitung:** [FAQ.md](FAQ.md#anpassungen)
 
 ---
 
@@ -253,7 +311,7 @@ Speichern → Bot neu starten → Fertig!
 | **Docker** | Variabel | 24/7 | 20 Min | 🔧 Flexibel |
 | **Raspberry Pi** | ~50€ | 24/7 | 2h | 🏠 Zuhause |
 
-**Vollständiger Vergleich:** [KOSTENLOSE_HOSTING_OPTIONEN.md](KOSTENLOSE_HOSTING_OPTIONEN.md)
+**Vollständiger Vergleich:** Siehe Deployment Guides oben
 
 ---
 
@@ -293,7 +351,7 @@ Wir folgen einem [Code of Conduct](CODE_OF_CONDUCT.md). Bitte lies ihn bevor du 
 ![GitHub last commit](https://img.shields.io/github/last-commit/xPerpleXz/discord-log-bot)
 ![GitHub repo size](https://img.shields.io/github/repo-size/xPerpleXz/discord-log-bot)
 
-- **Version:** 1.0.0 (Stable)
+- **Version:** 2.0.0 (Premium Edition)
 - **Status:** Aktiv entwickelt
 - **Letzte Aktualisierung:** Dezember 2024
 - **Python Version:** 3.11+
@@ -307,7 +365,7 @@ Wir folgen einem [Code of Conduct](CODE_OF_CONDUCT.md). Bitte lies ihn bevor du 
 **[xPerpleXz](https://github.com/xPerpleXz)**
 - 💻 Lead Developer
 - 📖 Documentation
-- 🎨 Project Design
+- 🎨 Project Design & Premium Edition
 
 ### Built With
 - [discord.py](https://github.com/Rapptz/discord.py) - Discord API Wrapper
@@ -317,11 +375,11 @@ Wir folgen einem [Code of Conduct](CODE_OF_CONDUCT.md). Bitte lies ihn bevor du 
 ### Hosting Partners
 - [Railway.app](https://railway.com?referralCode=xPerpleXz) - Cloud Hosting
 
-
 ### Special Thanks
 - Discord.py Community
 - Google Cloud Platform
 - Alle Contributors & Beta Tester
+- Das Elite-Entwicklerteam 🎨
 
 **Siehe [CONTRIBUTORS.md](CONTRIBUTORS.md) für vollständige Liste!**
 
@@ -371,8 +429,9 @@ Sicherheit wird ernst genommen!
 
 1. **Dokumentation:** [INDEX.md](INDEX.md) - Alle Guides
 2. **FAQ:** [FAQ.md](FAQ.md) - 30+ Antworten
-3. **Issues:** [GitHub Issues](https://github.com/xPerpleXz/discord-log-bot/issues)
-4. **Discussions:** [GitHub Discussions](https://github.com/xPerpleXz/discord-log-bot/discussions)
+3. **Update Guide:** [PREMIUM_UPDATE_GUIDE.md](PREMIUM_UPDATE_GUIDE.md)
+4. **Issues:** [GitHub Issues](https://github.com/xPerpleXz/discord-log-bot/issues)
+5. **Discussions:** [GitHub Discussions](https://github.com/xPerpleXz/discord-log-bot/discussions)
 
 ### Stay Updated
 
@@ -384,19 +443,26 @@ Sicherheit wird ernst genommen!
 
 ## 📈 Roadmap
 
-### v1.1.0 (Q1 2025)
-- [ ] Multi-Channel Support
-- [ ] Custom Aktionstypen
-- [ ] Excel Export
-- [ ] Erweiterte Charts
+### ✅ v2.0.0 (Dezember 2024) - RELEASED!
+- ✅ Premium Discord Embeds
+- ✅ Automatisches Auszahlungs-System
+- ✅ Live Dashboard mit Formeln
+- ✅ Progress Tracking
+- ✅ Corporate Design
 
-### v1.2.0 (Q2 2025)
-- [ ] Web Dashboard
-- [ ] REST API
-- [ ] Multi-Language
+### v2.1.0 (Q1 2025)
+- [ ] Charts im Dashboard Tab
+- [ ] Excel Export Funktion
+- [ ] Erweiterte User-Permissions
+- [ ] Custom Aktionstypen via Command
+
+### v2.2.0 (Q2 2025)
+- [ ] Web Dashboard (React)
+- [ ] REST API für externe Integration
+- [ ] Multi-Language Support
 - [ ] Mobile App
 
-### v2.0.0 (Q3 2025)
+### v3.0.0 (Q3 2025)
 - [ ] TypeScript Rewrite
 - [ ] PostgreSQL Support
 - [ ] Plugin System
@@ -410,8 +476,8 @@ Sicherheit wird ernst genommen!
 
 ```
 📝 Lines of Code:    ~1,500+ Python
-📄 Documentation:    ~5,000+ Lines
-⏱️ Development Time: 100+ Hours
+📄 Documentation:    ~8,000+ Lines
+⏱️ Development Time: 150+ Hours
 💰 Value:            Priceless
 🌟 Stars:            [Your Stars Here]
 🍴 Forks:            [Your Forks Here]
@@ -421,7 +487,7 @@ Sicherheit wird ernst genommen!
 
 ## 🎉 Danke fürs Lesen!
 
-Made with ❤️ by **[xPerpleXz](https://github.com/xPerpleXz)**
+Made with ❤️ & 🎨 by **[xPerpleXz](https://github.com/xPerpleXz)**
 
 **Gefällt dir das Projekt?**
 - ⭐ **Star** auf GitHub
@@ -437,5 +503,8 @@ Made with ❤️ by **[xPerpleXz](https://github.com/xPerpleXz)**
 
 ![Footer](https://img.shields.io/badge/Made%20with-Python-blue?style=for-the-badge&logo=python)
 ![Footer](https://img.shields.io/badge/Powered%20by-Discord.py-7289DA?style=for-the-badge&logo=discord)
+![Footer](https://img.shields.io/badge/Premium-Edition-gold?style=for-the-badge)
+
+**Version 2.0.0 - Premium Edition**
 
 </div>
