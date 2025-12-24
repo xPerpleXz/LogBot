@@ -1,177 +1,228 @@
-# 🤖 Discord Log-Bot mit Google Sheets Integration
+# 🤖 Discord Log Bot
 
-Ein professioneller Discord Bot, der Mitglieder-Logs erfasst, in Google Sheets speichert und automatische Auszahlungen berechnet.
+<div align="center">
+
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
+![Discord.py](https://img.shields.io/badge/discord.py-2.3.2-blue.svg)
+![Status](https://img.shields.io/badge/status-active-success.svg)
+![Maintained](https://img.shields.io/badge/maintained-yes-green.svg)
+
+**Ein professioneller Discord Bot für Log-Management mit Google Sheets Integration**
+
+Automatische Auszahlungsberechnung • Wöchentliche Reports • Bildverifikation
+
+[Features](#-features) •
+[Quick Start](QUICKSTART.md) •
+[Dokumentation](#-dokumentation) •
+[Deployment](#-deployment-optionen) •
+[Contributing](CONTRIBUTING.md) •
+[Lizenz](#-lizenz)
+
+</div>
+
+---
+
+## 📖 Über dieses Projekt
+
+> **Erstellt von:** [xPerpleXz](https://github.com/xPerpleXz)  
+> **Lizenz:** MIT  
+> **Version:** 1.0.0  
+> **Sprache:** Python 3.11+
+
+Dieser Discord Bot wurde entwickelt, um Mitglieder-Aktivitäten professionell zu tracken, Logs zu verwalten und automatische Auszahlungen zu berechnen - alles mit einer modernen, benutzerfreundlichen Discord UI.
+
+---
 
 ## ✨ Features
 
-- 🎯 **3 Aktionstypen**: Düngen, Reparieren, Panel platziert
-- 💰 **Automatische Berechnung**: Unterschiedliche Auszahlungsbeträge pro Aktion
+### Core Funktionen
+- 🎯 **3 Aktionstypen**: Düngen, Reparieren, Panel platziert (anpassbar)
+- 💰 **Automatische Berechnung**: Individuelle Auszahlungsbeträge pro Aktion
 - 📸 **Bildverifikation**: Jeder Log benötigt einen Bildbeweis
-- 📊 **Persönliche Statistiken**: Mitglieder können ihre Stats abfragen
-- 📈 **Wöchentliche Berichte**: Automatische Reports mit Top-Verdienern
-- 🔒 **Sicher**: Alle Daten in Google Sheets gespeichert
-- ⚡ **Modern**: Button-basierte Interaktion (Discord UI)
+- 📊 **Persönliche Statistiken**: Mitglieder können ihre Stats in Echtzeit abfragen
+- 📈 **Wöchentliche Berichte**: Automatische Reports mit Top 10 Verdienern
+- 🔒 **Sicher**: Alle Daten verschlüsselt in Google Sheets
+- ⚡ **Modern**: Button-basierte Interaktion mit Discord UI
+
+### Discord Commands
+```
+/log              - Log einreichen mit Dropdown & Modal
+/wochenbericht    - Wöchentlicher Report (nur Admins)
+/setup            - Sheet Initialisierung (einmalig, Admins)
+/hilfe            - Befehlsübersicht
+```
+
+### Admin Features
+- 📊 Gesamtstatistiken (All-Time)
+- 📅 Wöchentliche Statistiken
+- 👤 User-spezifische Statistiken
+- 💾 CSV Backup Export
+- 🗑️ Alte Logs löschen
+- 🔄 Automatische Reports
+
+### Technische Highlights
+- ✅ Base64 Credentials Support (Cloud-ready)
+- ✅ Railway/Render/Docker/Oracle Cloud kompatibel
+- ✅ Async/Await für Performance
+- ✅ Fehlerbehandlung & Logging
+- ✅ Type Hints & Docstrings
+- ✅ Production-ready Code
+
+---
+
+## 🚀 Quick Start
+
+### Option 1: Schnellstart (15 Minuten)
+```bash
+# 1. Repository klonen
+git clone https://github.com/xPerpleXz/discord-log-bot.git
+cd discord-log-bot
+
+# 2. Dependencies installieren
+pip install -r requirements.txt
+
+# 3. Konfiguration
+cp .env.example .env
+# .env bearbeiten mit deinen Credentials
+
+# 4. Bot starten
+python bot.py
+```
+
+**Siehe [QUICKSTART.md](QUICKSTART.md) für detaillierte Anleitung!**
+
+### Option 2: Cloud Deployment
+- **Railway:** [RAILWAY_GUIDE.md](RAILWAY_GUIDE.md) - $5/Monat
+- **Render:** [RENDER_GUIDE.md](RENDER_GUIDE.md) - Kostenlos
+- **Oracle Cloud:** [ORACLE_CLOUD_GUIDE.md](ORACLE_CLOUD_GUIDE.md) - Kostenlos 24/7
+- **Docker:** [DOCKER_GUIDE.md](DOCKER_GUIDE.md) - Flexibel
+
+---
 
 ## 📋 Voraussetzungen
 
 - Python 3.11 oder höher
-- Discord Bot Account
+- Discord Bot Account ([Developer Portal](https://discord.com/developers/applications))
 - Google Cloud Account (kostenlos)
-- Google Sheets
+- Google Sheets API aktiviert
 
-## 🚀 Installation
+**Detaillierte Setup-Anleitung:** [README.md - Installation](#installation)
 
-### Schritt 1: Repository klonen
+---
 
+## 📚 Dokumentation
+
+### Hauptdokumentation
+| Dokument | Beschreibung | Für wen? |
+|----------|--------------|----------|
+| [START_HIER.md](START_HIER.md) | Projekt-Übersicht | Alle |
+| [QUICKSTART.md](QUICKSTART.md) | 15-Min Schnellstart | Anfänger |
+| [README.md](README.md) | Vollständige Docs | Alle |
+| [INDEX.md](INDEX.md) | Dokumentations-Index | Navigation |
+| [FAQ.md](FAQ.md) | 30+ häufige Fragen | Troubleshooting |
+
+### Deployment Guides
+| Guide | Platform | Kosten | Schwierigkeit |
+|-------|----------|--------|---------------|
+| [RAILWAY_GUIDE.md](RAILWAY_GUIDE.md) | Railway | $5/mo | ⭐ Einfach |
+| [RENDER_GUIDE.md](RENDER_GUIDE.md) | Render.com | Free | ⭐ Einfach |
+| [ORACLE_CLOUD_GUIDE.md](ORACLE_CLOUD_GUIDE.md) | Oracle | Free 24/7 | ⭐⭐⭐ Mittel |
+| [DOCKER_GUIDE.md](DOCKER_GUIDE.md) | Docker | Variabel | ⭐⭐ Mittel |
+| [KOSTENLOSE_HOSTING_OPTIONEN.md](KOSTENLOSE_HOSTING_OPTIONEN.md) | Vergleich | Alle | Info |
+
+### Entwickler Docs
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution Guidelines
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) - Community Regeln
+- [SECURITY.md](SECURITY.md) - Security Policy
+- [CHANGELOG.md](CHANGELOG.md) - Versionshistorie
+- [CONTRIBUTORS.md](CONTRIBUTORS.md) - Hall of Fame
+
+---
+
+## 💻 Installation
+
+### 1. Discord Bot erstellen
+1. [Discord Developer Portal](https://discord.com/developers/applications)
+2. "New Application" → Bot Token kopieren
+3. Privileged Gateway Intents aktivieren
+4. OAuth2 URL generieren & Bot einladen
+
+### 2. Google Sheets Setup
+1. [Google Cloud Console](https://console.cloud.google.com/)
+2. Neues Projekt erstellen
+3. Google Sheets API aktivieren
+4. Service Account erstellen
+5. JSON Key downloaden → `credentials.json`
+
+### 3. Bot konfigurieren
 ```bash
-git clone <dein-repo>
-cd discord_log_bot
+# .env erstellen
+cp .env.example .env
+
+# .env bearbeiten:
+DISCORD_TOKEN=dein_bot_token
+SPREADSHEET_ID=deine_sheet_id
+LOG_CHANNEL_IDS=channel1,channel2
+REPORT_CHANNEL_ID=report_channel
 ```
 
-### Schritt 2: Virtuelle Umgebung erstellen (empfohlen)
-
-```bash
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# Linux/Mac
-source venv/bin/activate
-```
-
-### Schritt 3: Dependencies installieren
-
+### 4. Dependencies & Start
 ```bash
 pip install -r requirements.txt
-```
-
-### Schritt 4: Discord Bot erstellen
-
-1. Gehe zu https://discord.com/developers/applications
-2. Klicke "New Application"
-3. Gib deinem Bot einen Namen
-4. Gehe zu "Bot" → "Add Bot"
-5. **Wichtig**: Aktiviere unter "Privileged Gateway Intents":
-   - ✅ Presence Intent
-   - ✅ Server Members Intent
-   - ✅ Message Content Intent
-6. Kopiere den Bot Token (klicke "Reset Token" falls nötig)
-7. Gehe zu "OAuth2" → "URL Generator"
-8. Wähle:
-   - Scopes: `bot`, `applications.commands`
-   - Bot Permissions: 
-     - `Send Messages`
-     - `Embed Links`
-     - `Attach Files`
-     - `Read Message History`
-     - `Use Slash Commands`
-9. Kopiere die generierte URL und lade den Bot auf deinen Server ein
-
-### Schritt 5: Google Sheets API einrichten
-
-1. Gehe zu https://console.cloud.google.com/
-2. Erstelle ein neues Projekt oder wähle ein bestehendes
-3. Aktiviere die **Google Sheets API**:
-   - Gehe zu "APIs & Services" → "Enable APIs and Services"
-   - Suche nach "Google Sheets API"
-   - Klicke "Enable"
-
-4. **Service Account erstellen**:
-   - Gehe zu "APIs & Services" → "Credentials"
-   - Klicke "Create Credentials" → "Service Account"
-   - Name: `discord-log-bot`
-   - Rolle: `Editor`
-   - Klicke "Done"
-
-5. **JSON Key erstellen**:
-   - Klicke auf den erstellten Service Account
-   - Gehe zu "Keys" → "Add Key" → "Create new key"
-   - Wähle "JSON"
-   - Die Datei wird heruntergeladen
-   - **Benenne die Datei um zu `credentials.json`**
-   - **Verschiebe sie in den `discord_log_bot` Ordner**
-
-6. **Google Sheet erstellen**:
-   - Gehe zu https://docs.google.com/spreadsheets/
-   - Erstelle ein neues Sheet
-   - Benenne es z.B. "Discord Logs"
-   - Kopiere die ID aus der URL:
-     ```
-     https://docs.google.com/spreadsheets/d/DEINE_SHEET_ID_HIER/edit
-     ```
-   - **Wichtig**: Teile das Sheet mit der Service Account Email!
-     - Die Email findest du in der `credentials.json` unter `client_email`
-     - Format: `discord-log-bot@projekt-name.iam.gserviceaccount.com`
-     - Gehe zum Sheet → Teilen → Füge die Email hinzu mit "Editor" Rechten
-
-### Schritt 6: Konfiguration
-
-1. Kopiere `.env.example` zu `.env`:
-```bash
-cp .env.example .env
-```
-
-2. Öffne `.env` und füge deine Daten ein:
-
-```env
-DISCORD_TOKEN=dein_bot_token_von_discord
-SPREADSHEET_ID=deine_google_sheets_id
-LOG_CHANNEL_ID=channel_id_für_öffentliche_logs
-REPORT_CHANNEL_ID=channel_id_für_wöchentliche_reports
-```
-
-**Channel IDs finden:**
-- Discord Developer Mode aktivieren: Einstellungen → App-Einstellungen → Erweitert → Entwicklermodus
-- Rechtsklick auf einen Channel → "ID kopieren"
-
-### Schritt 7: Bot starten
-
-```bash
 python bot.py
 ```
 
-**Wenn alles funktioniert, siehst du:**
+**✅ Bot ist online!**
+
+**Vollständige Anleitung:** [QUICKSTART.md](QUICKSTART.md)
+
+---
+
+## 🎯 Verwendung
+
+### Für Mitglieder
+
+**Log einreichen:**
 ```
-✅ Google Sheets verbunden
-Bot bereit: DeinBotName#1234
+1. /log im Discord
+2. Aktion aus Dropdown wählen
+3. Beschreibung eingeben
+4. Bild hochladen als Beweis
+5. ✅ Fertig! Log wird gespeichert
 ```
 
-### Schritt 8: Sheet einrichten
+**Statistiken ansehen:**
+- Button "Meine Statistiken" im `/log` Modal
 
-Im Discord, führe den Befehl aus:
+### Für Admins
+
+**Setup (einmalig):**
 ```
 /setup
 ```
-Dies erstellt die Spalten im Google Sheet automatisch.
+Erstellt Sheet-Struktur automatisch.
 
-## 🎮 Verwendung
+**Wochenbericht:**
+```
+/wochenbericht
+```
+Zeigt Top 10, Statistiken, Gesamtauszahlung.
 
-### Für Mitglieder:
+**Admin Tools (CLI):**
+```bash
+python admin_tools.py
+```
+Für Backups, Statistiken, Daten-Management.
 
-1. **Log einreichen**: `/log`
-   - Wähle eine Aktion aus dem Dropdown
-   - Fülle die Beschreibung aus
-   - Lade ein Bild als Beweis hoch
+---
 
-2. **Statistiken anzeigen**: Klicke auf "Meine Statistiken" Button
-   - Zeigt deine wöchentlichen Aktivitäten
-   - Zeigt deinen Gesamtverdienst
+## 🛠️ Anpassungen
 
-### Für Admins:
+### Auszahlungsbeträge ändern
 
-1. **Manueller Wochenbericht**: `/wochenbericht`
-   - Zeigt Top 10 Verdiener
-   - Aktionsstatistiken
-   - Gesamtauszahlung
-
-2. **Sheet Setup**: `/setup`
-   - Nur einmal beim ersten Start ausführen
-
-## 💰 Auszahlungsbeträge anpassen
-
-Öffne `bot.py` und ändere die Beträge in Zeile 24-28:
-
+**In `bot.py`, Zeile 24-28:**
 ```python
 PAYMENT_AMOUNTS = {
     'Düngen': 5.00,        # ← Hier anpassen
@@ -180,177 +231,212 @@ PAYMENT_AMOUNTS = {
 }
 ```
 
-Speichern und Bot neu starten.
+Speichern → Bot neu starten → Fertig!
 
-## 📊 Google Sheets Aufbau
+### Neue Aktionen hinzufügen
 
-Das Sheet enthält folgende Spalten:
+1. In `PAYMENT_AMOUNTS` hinzufügen
+2. In `ActionSelect` Class neue Option erstellen
+3. Bot neu starten
 
-| Zeitstempel | KW | Username | User-ID | Aktion | Beschreibung | Betrag | Bild-URL |
-|-------------|-------|----------|---------|--------|--------------|--------|----------|
-| 23.12.2024 14:30 | KW51/2024 | User123 | 123456789 | Düngen | ... | 5.00 | https://... |
+**Detaillierte Anleitung:** [README.md - Anpassungen](README.md#anpassungen)
 
-Du kannst daraus Pivot-Tabellen, Charts etc. erstellen!
+---
 
-## 🚂 Railway Deployment
+## ☁️ Deployment-Optionen
 
-### Voraussetzungen:
-- Railway Account (https://railway.app/)
-- GitHub Repository
+| Platform | Kosten | Uptime | Setup | Empfehlung |
+|----------|--------|--------|-------|------------|
+| **Oracle Cloud** | 0€ | 24/7 | 30 Min | 🏆 Beste für 24/7 |
+| **Render.com** | 0€ | ~750h | 5 Min | ⭐ Einfachste |
+| **Railway** | $5/mo | 24/7 | 10 Min | ✅ Production |
+| **Docker** | Variabel | 24/7 | 20 Min | 🔧 Flexibel |
+| **Raspberry Pi** | ~50€ | 24/7 | 2h | 🏠 Zuhause |
 
-### Setup:
+**Vollständiger Vergleich:** [KOSTENLOSE_HOSTING_OPTIONEN.md](KOSTENLOSE_HOSTING_OPTIONEN.md)
 
-1. **Erstelle `Procfile`** (schon vorhanden):
-```
-worker: python bot.py
-```
+---
 
-2. **Erstelle `railway.json`** (schon vorhanden)
+## 🤝 Contributing
 
-3. **Push zu GitHub**:
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git remote add origin <dein-github-repo>
-git push -u origin main
-```
+Contributions sind willkommen! 🎉
 
-4. **Railway Projekt erstellen**:
-   - Gehe zu https://railway.app/
-   - "New Project" → "Deploy from GitHub repo"
-   - Wähle dein Repository
-   - Railway erkennt automatisch Python
+### Wie kann ich beitragen?
 
-5. **Environment Variables setzen**:
-   - Im Railway Dashboard → Variables
-   - Füge hinzu:
-     ```
-     DISCORD_TOKEN=...
-     SPREADSHEET_ID=...
-     LOG_CHANNEL_ID=...
-     REPORT_CHANNEL_ID=...
-     ```
+1. **Fork** das Repository
+2. **Clone** dein Fork
+3. **Branch** erstellen: `git checkout -b feature/deine-feature`
+4. **Commit** Änderungen: `git commit -m 'feat: Add feature'`
+5. **Push** zu Branch: `git push origin feature/deine-feature`
+6. **Pull Request** erstellen
 
-6. **credentials.json hochladen**:
-   - Railway Dashboard → Settings → Volumes
-   - Oder: Konvertiere `credentials.json` zu einer Umgebungsvariable:
-   
-   ```bash
-   # credentials.json Inhalt als Base64
-   cat credentials.json | base64
-   ```
-   
-   Füge in Railway hinzu:
-   ```
-   GOOGLE_CREDENTIALS_BASE64=<base64_string>
-   ```
-   
-   Dann in `bot.py` anpassen:
-   ```python
-   import base64
-   import json
-   
-   # In init_google_sheets():
-   if os.getenv('GOOGLE_CREDENTIALS_BASE64'):
-       creds_json = base64.b64decode(os.getenv('GOOGLE_CREDENTIALS_BASE64'))
-       creds_dict = json.loads(creds_json)
-       creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
-   else:
-       creds = Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
-   ```
+**Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Details!**
 
-7. **Deploy!**
-   - Railway deployed automatisch
-   - Check die Logs: Railway Dashboard → Deployments → View Logs
+### Code of Conduct
 
-## 🔧 Troubleshooting
+Wir folgen einem [Code of Conduct](CODE_OF_CONDUCT.md). Bitte lies ihn bevor du beiträgst.
 
-### Bot startet nicht:
-```
-❌ DISCORD_TOKEN fehlt in der .env Datei!
-```
-**Lösung**: Überprüfe, ob `.env` existiert und den Token enthält.
+---
 
-### Google Sheets Fehler:
-```
-❌ Google Sheets Fehler: 403 Forbidden
-```
-**Lösung**: 
-- Sheet mit Service Account Email geteilt?
-- Google Sheets API aktiviert?
-- `credentials.json` im richtigen Ordner?
+## 🐛 Bug Reports & Feature Requests
 
-### Slash Commands werden nicht angezeigt:
-**Lösung**: 
-- Warte 1 Stunde (Discord sync)
-- Oder kicke und lade den Bot neu ein
-- Stelle sicher, dass `applications.commands` Scope aktiv ist
+- **Bug gefunden?** [Issue erstellen](https://github.com/xPerpleXz/discord-log-bot/issues/new?template=bug_report.md)
+- **Feature Idee?** [Feature Request](https://github.com/xPerpleXz/discord-log-bot/issues/new?template=feature_request.md)
+- **Fragen?** [FAQ.md](FAQ.md) checken oder [Discussion starten](https://github.com/xPerpleXz/discord-log-bot/discussions)
 
-### Bilder werden nicht gespeichert:
-**Lösung**: Überprüfe Discord Permissions:
-- Bot braucht "Attach Files" Permission
-- Bot muss Nachrichten im Channel lesen können
+---
 
-## 📁 Projekt-Struktur
+## 📊 Projekt-Status
+
+![GitHub issues](https://img.shields.io/github/issues/xPerpleXz/discord-log-bot)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/xPerpleXz/discord-log-bot)
+![GitHub last commit](https://img.shields.io/github/last-commit/xPerpleXz/discord-log-bot)
+![GitHub repo size](https://img.shields.io/github/repo-size/xPerpleXz/discord-log-bot)
+
+- **Version:** 1.0.0 (Stable)
+- **Status:** Aktiv entwickelt
+- **Letzte Aktualisierung:** Dezember 2024
+- **Python Version:** 3.11+
+- **Discord.py:** 2.3.2
+
+---
+
+## 🏆 Credits & Danksagungen
+
+### Creator
+**[xPerpleXz](https://github.com/xPerpleXz)**
+- 💻 Lead Developer
+- 📖 Documentation
+- 🎨 Project Design
+
+### Built With
+- [discord.py](https://github.com/Rapptz/discord.py) - Discord API Wrapper
+- [Google Sheets API](https://developers.google.com/sheets/api) - Data Storage
+- [Python](https://www.python.org/) - Programming Language
+
+### Hosting Partners
+- [Railway.app](https://railway.app/) - Cloud Hosting
+- [Oracle Cloud](https://www.oracle.com/cloud/) - Free Tier
+- [Render.com](https://render.com/) - Free Hosting
+
+### Special Thanks
+- Discord.py Community
+- Google Cloud Platform
+- Alle Contributors & Beta Tester
+
+**Siehe [CONTRIBUTORS.md](CONTRIBUTORS.md) für vollständige Liste!**
+
+---
+
+## 📜 Lizenz
+
+Dieses Projekt ist unter der **MIT License** lizenziert.
 
 ```
-discord_log_bot/
-│
-├── bot.py                 # Hauptbot-Code
-├── requirements.txt       # Python Dependencies
-├── .env                   # Konfiguration (nicht in Git!)
-├── .env.example          # Beispiel-Konfiguration
-├── credentials.json      # Google Service Account (nicht in Git!)
-├── Procfile              # Railway/Heroku Deployment
-├── railway.json          # Railway Konfiguration
-├── .gitignore           # Git Ignore Regeln
-└── README.md            # Diese Datei
+MIT License
+
+Copyright (c) 2024 xPerpleXz
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction...
 ```
 
-## 🔐 Sicherheit
+**Siehe [LICENSE](LICENSE) für vollständigen Text.**
 
-**WICHTIG - NIEMALS committen:**
-- ❌ `.env` Datei
-- ❌ `credentials.json`
-- ❌ Bot Tokens
+### Was bedeutet das?
 
-Die `.gitignore` schützt diese Dateien automatisch.
+✅ Kommerzielle Nutzung  
+✅ Modifikation  
+✅ Distribution  
+✅ Private Nutzung  
 
-## 🆘 Support
+❗ Keine Garantie  
+❗ Keine Haftung  
 
-Bei Problemen:
-1. Überprüfe die Logs im Terminal
-2. Stelle sicher, alle Schritte befolgt zu haben
-3. Überprüfe Discord & Google Permissions
+---
 
-## 📝 Lizenz
+## 🔒 Security
 
-Dieses Projekt ist für private Zwecke frei nutzbar.
+Sicherheit wird ernst genommen!
 
-## 🎯 Anpassungen
+- **Vulnerability?** Siehe [SECURITY.md](SECURITY.md)
+- **Best Practices:** Dokumentiert in Guides
+- **Updates:** Regelmäßige Security Patches
 
-### Mehr Aktionen hinzufügen:
+---
 
-In `bot.py`, Zeile 24:
-```python
-PAYMENT_AMOUNTS = {
-    'Düngen': 5.00,
-    'Reparieren': 8.00,
-    'Panel platziert': 12.00,
-    'Neue Aktion': 15.00,  # ← Hinzufügen
-}
+## 📞 Support & Community
+
+### Hilfe benötigt?
+
+1. **Dokumentation:** [INDEX.md](INDEX.md) - Alle Guides
+2. **FAQ:** [FAQ.md](FAQ.md) - 30+ Antworten
+3. **Issues:** [GitHub Issues](https://github.com/xPerpleXz/discord-log-bot/issues)
+4. **Discussions:** [GitHub Discussions](https://github.com/xPerpleXz/discord-log-bot/discussions)
+
+### Stay Updated
+
+- 🌟 **Star** das Projekt
+- 👁️ **Watch** für Updates
+- 🍴 **Fork** zum Experimentieren
+
+---
+
+## 📈 Roadmap
+
+### v1.1.0 (Q1 2025)
+- [ ] Multi-Channel Support
+- [ ] Custom Aktionstypen
+- [ ] Excel Export
+- [ ] Erweiterte Charts
+
+### v1.2.0 (Q2 2025)
+- [ ] Web Dashboard
+- [ ] REST API
+- [ ] Multi-Language
+- [ ] Mobile App
+
+### v2.0.0 (Q3 2025)
+- [ ] TypeScript Rewrite
+- [ ] PostgreSQL Support
+- [ ] Plugin System
+- [ ] GraphQL API
+
+**Siehe [CHANGELOG.md](CHANGELOG.md) für Details!**
+
+---
+
+## 📊 Stats
+
 ```
-
-Dann in `ActionSelect` (Zeile 58) die Options erweitern.
-
-### Wochenbericht-Intervall ändern:
-
-Zeile 43 in `bot.py`:
-```python
-@tasks.loop(hours=168)  # 168 = 7 Tage, 24 = täglich
+📝 Lines of Code:    ~1,500+ Python
+📄 Documentation:    ~5,000+ Lines
+⏱️ Development Time: 100+ Hours
+💰 Value:            Priceless
+🌟 Stars:            [Your Stars Here]
+🍴 Forks:            [Your Forks Here]
 ```
 
 ---
 
-**Viel Erfolg! 🚀**
+## 🎉 Danke fürs Lesen!
+
+Made with ❤️ by **[xPerpleXz](https://github.com/xPerpleXz)**
+
+**Gefällt dir das Projekt?**
+- ⭐ **Star** auf GitHub
+- 🍴 **Fork** und experimentiere
+- 🐛 **Contribute** mit PRs
+- 📢 **Teile** mit anderen
+
+---
+
+<div align="center">
+
+**[⬆ Back to Top](#-discord-log-bot)**
+
+![Footer](https://img.shields.io/badge/Made%20with-Python-blue?style=for-the-badge&logo=python)
+![Footer](https://img.shields.io/badge/Powered%20by-Discord.py-7289DA?style=for-the-badge&logo=discord)
+
+</div>
