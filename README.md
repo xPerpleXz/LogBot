@@ -315,7 +315,7 @@ Wir folgen einem [Code of Conduct](CODE_OF_CONDUCT.md). Bitte lies ihn bevor du 
 - [Python](https://www.python.org/) - Programming Language
 
 ### Hosting Partners
-- [Railway.app]([https://railway.com?referralCode=xPerpleXz]) - Cloud Hosting
+- [Railway.app](https://railway.com?referralCode=xPerpleXz) - Cloud Hosting
 
 
 ### Special Thanks
