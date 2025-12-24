@@ -49,39 +49,39 @@ class LogBot(commands.Bot):
         if not self.weekly_report.is_running():
             self.weekly_report.start()
     
-def init_google_sheets(self):
-    """Google Sheets API initialisieren"""
-    try:
-        # Option 1: Base64 credentials (Railway/Cloud)
-        if os.getenv('GOOGLE_CREDENTIALS_BASE64'):
-            import base64
-            import json
+    def init_google_sheets(self):
+        """Google Sheets API initialisieren - mit Base64 Support"""
+        try:
+            # Option 1: Base64 credentials (Railway/Cloud)
+            if os.getenv('GOOGLE_CREDENTIALS_BASE64'):
+                import base64
+                import json
+                
+                print("📦 Verwende Base64 Credentials...")
+                creds_base64 = os.getenv('GOOGLE_CREDENTIALS_BASE64')
+                creds_json = base64.b64decode(creds_base64)
+                creds_dict = json.loads(creds_json)
+                
+                creds = Credentials.from_service_account_info(
+                    creds_dict,
+                    scopes=SCOPES
+                )
+                print("✅ Google Sheets verbunden (Base64)")
             
-            print("📦 Verwende Base64 Credentials...")
-            creds_base64 = os.getenv('GOOGLE_CREDENTIALS_BASE64')
-            creds_json = base64.b64decode(creds_base64)
-            creds_dict = json.loads(creds_json)
+            # Option 2: Local credentials.json file
+            else:
+                creds = Credentials.from_service_account_file(
+                    'credentials.json',
+                    scopes=SCOPES
+                )
+                print("✅ Google Sheets verbunden (File)")
             
-            creds = Credentials.from_service_account_info(
-                creds_dict,
-                scopes=SCOPES
-            )
-            print("✅ Google Sheets verbunden (Base64)")
-        
-        # Option 2: Local credentials.json file
-        else:
-            creds = Credentials.from_service_account_file(
-                'credentials.json',
-                scopes=SCOPES
-            )
-            print("✅ Google Sheets verbunden (File)")
-        
-        service = build('sheets', 'v4', credentials=creds)
-        return service
-        
-    except Exception as e:
-        print(f"❌ Google Sheets Fehler: {e}")
-        return None
+            service = build('sheets', 'v4', credentials=creds)
+            return service
+            
+        except Exception as e:
+            print(f"❌ Google Sheets Fehler: {e}")
+            return None
     
     @tasks.loop(hours=168)  # 7 Tage = 168 Stunden
     async def weekly_report(self):
