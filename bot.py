@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Discord Log Bot - PREMIUM EDITION
-Professional Log Management System with Payment Integration
+Discord Log Bot - METALLIC PURPLE EDITION
+Professional Log Management System with Premium Payment Panel
 
 Author: xPerpleXz
 License: MIT
-Version: 2.0.0 - Premium Edition
+Version: 2.1.0 - Metallic Purple Edition
 Repository: https://github.com/xPerpleXz/discord-log-bot
 """
 
@@ -16,16 +16,20 @@ from discord import app_commands
 import os
 from datetime import datetime, timedelta
 import asyncio
-from typing import Optional, Dict, List
-import io
+from typing import Optional, Dict, List, Tuple
+import json
 
 # Google Sheets imports
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+# Environment
+from dotenv import load_dotenv
+load_dotenv()
+
 __author__ = "xPerpleXz"
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __license__ = "MIT"
 
 # ==================== KONFIGURATION ====================
@@ -40,16 +44,62 @@ PAYMENT_AMOUNTS = {
     'Panel platziert': 12.00
 }
 
-# 🎨 PREMIUM COLORS für Embeds
+# 🎨 METALLIC PURPLE COLOR PALETTE
 COLORS = {
-    'primary': 0x4285F4,      # Google Blue
-    'success': 0x4CAF50,      # Green
-    'warning': 0xFFC107,      # Amber
-    'danger': 0xF44336,       # Red
-    'info': 0x2196F3,         # Light Blue
-    'gold': 0xFFD700,         # Gold
-    'purple': 0x9C27B0        # Purple
+    # Primary Colors
+    'primary': 0x6A0DAD,          # Classic Purple
+    'secondary': 0x3D0066,        # Dark Chrome
+    'accent': 0xC77DFF,           # Metallic Lilac
+    
+    # Functional Colors
+    'success': 0x9D4EDD,          # Purple Success
+    'warning': 0xE040FB,          # Magenta Warning
+    'danger': 0xAA00FF,           # Vivid Purple Error
+    'info': 0xB388FF,             # Light Purple Info
+    
+    # Special Colors
+    'gold': 0xFFD700,             # Gold for payouts
+    'platinum': 0xE5E4E2,         # Platinum accent
+    'chrome': 0x8A2BE2,           # Blue Violet Chrome
+    
+    # Gradient Simulation
+    'gradient_start': 0x7B2CBF,   # Gradient Start
+    'gradient_end': 0xE0AAFF,     # Gradient End
 }
+
+# Rollen-Konfiguration (aus .env oder Speicher)
+PAYOUT_ROLE_IDS = []
+CONFIG_FILE = 'config.json'
+
+def load_config():
+    """Lade Konfiguration aus Datei und .env"""
+    global PAYOUT_ROLE_IDS
+    
+    # Erst aus .env laden
+    env_roles = os.getenv('PAYOUT_ROLE_IDS', '')
+    if env_roles:
+        PAYOUT_ROLE_IDS = [int(r.strip()) for r in env_roles.split(',') if r.strip()]
+    
+    # Dann aus config.json überschreiben (falls vorhanden)
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                if 'payout_roles' in config:
+                    PAYOUT_ROLE_IDS = config['payout_roles']
+        except:
+            pass
+    
+    return PAYOUT_ROLE_IDS
+
+def save_config():
+    """Speichere Konfiguration in Datei"""
+    config = {'payout_roles': PAYOUT_ROLE_IDS}
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
+
+# Lade Konfiguration beim Start
+load_config()
 
 # ==================== BOT CLASS ====================
 
@@ -85,7 +135,6 @@ class LogBot(commands.Bot):
             # Option 1: Base64 credentials (Railway/Cloud)
             if os.getenv('GOOGLE_CREDENTIALS_BASE64'):
                 import base64
-                import json
                 
                 print("📦 Verwende Base64 Credentials...")
                 creds_base64 = os.getenv('GOOGLE_CREDENTIALS_BASE64')
@@ -127,6 +176,25 @@ class LogBot(commands.Bot):
 # Bot Instanz
 bot = LogBot()
 
+# ==================== PERMISSION CHECK ====================
+
+def has_payout_permission():
+    """Check ob User Auszahlungs-Berechtigung hat"""
+    async def predicate(interaction: discord.Interaction) -> bool:
+        # Admins haben immer Zugriff
+        if interaction.user.guild_permissions.administrator:
+            return True
+        
+        # Check Rollen
+        user_role_ids = [role.id for role in interaction.user.roles]
+        for role_id in PAYOUT_ROLE_IDS:
+            if role_id in user_role_ids:
+                return True
+        
+        return False
+    
+    return app_commands.check(predicate)
+
 # ==================== HELPER FUNCTIONS ====================
 
 async def get_total_log_count() -> int:
@@ -150,44 +218,29 @@ async def get_total_log_count() -> int:
 
 
 def create_progress_bar(current: int, target: int, length: int = 20) -> str:
-    """
-    Erstellt eine visuelle Progress Bar
-    
-    Args:
-        current: Aktueller Fortschritt
-        target: Ziel-Wert
-        length: Länge der Bar in Zeichen
-        
-    Returns:
-        Progress Bar String (z.B. "▰▰▰▰▰▰▱▱▱▱")
-    """
+    """Erstellt eine visuelle Progress Bar mit Metallic-Style"""
     if target == 0:
-        return "▱" * length
+        return "░" * length
     
     percentage = min(current / target, 1.0)
     filled = int(length * percentage)
     empty = length - filled
     
-    # Unicode Block Characters für smooth bar
-    bar = "▰" * filled + "▱" * empty
+    # Metallic Style Bar
+    bar = "▓" * filled + "░" * empty
     
     return bar
 
 
-async def get_user_week_earnings(user_id: int) -> Dict[str, any]:
+async def get_all_users_with_earnings() -> List[Dict]:
     """
-    Hole detaillierte Wochen-Statistiken für einen User
+    Hole alle User mit offenen Guthaben für diese Woche
     
     Returns:
-        {
-            'total': float,
-            'logs': int,
-            'breakdown': {'Düngen': count, ...},
-            'week': 'KW52/2024'
-        }
+        List of {user_id, username, total, logs, breakdown}
     """
     if not bot.sheets_service:
-        return {'total': 0, 'logs': 0, 'breakdown': {}, 'week': ''}
+        return []
     
     try:
         sheet = bot.sheets_service.spreadsheets()
@@ -205,12 +258,67 @@ async def get_user_week_earnings(user_id: int) -> Dict[str, any]:
         
         values = result.get('values', [])
         
-        # Statistiken berechnen
+        # User-Statistiken sammeln
+        user_stats = {}
+        
+        for row in values:
+            if len(row) >= 7:
+                if row[1] == week_key:
+                    user_id = row[3]
+                    username = row[2]
+                    action = row[4]
+                    amount = float(row[6])
+                    
+                    if user_id not in user_stats:
+                        user_stats[user_id] = {
+                            'user_id': user_id,
+                            'username': username,
+                            'total': 0,
+                            'logs': 0,
+                            'breakdown': {a: 0 for a in PAYMENT_AMOUNTS.keys()}
+                        }
+                    
+                    user_stats[user_id]['total'] += amount
+                    user_stats[user_id]['logs'] += 1
+                    if action in user_stats[user_id]['breakdown']:
+                        user_stats[user_id]['breakdown'][action] += 1
+        
+        # Als Liste zurückgeben, sortiert nach Betrag
+        users = list(user_stats.values())
+        users.sort(key=lambda x: x['total'], reverse=True)
+        
+        return users
+        
+    except Exception as e:
+        print(f"❌ Fehler beim Abrufen der User-Earnings: {e}")
+        return []
+
+
+async def get_user_week_earnings(user_id: int) -> Dict:
+    """Hole detaillierte Wochen-Statistiken für einen User"""
+    if not bot.sheets_service:
+        return {'total': 0, 'logs': 0, 'breakdown': {}, 'week': '', 'row_indices': []}
+    
+    try:
+        sheet = bot.sheets_service.spreadsheets()
+        
+        current_week = datetime.now().isocalendar()[1]
+        current_year = datetime.now().year
+        week_key = f"KW{current_week}/{current_year}"
+        
+        result = sheet.values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range='Logs!A2:H'
+        ).execute()
+        
+        values = result.get('values', [])
+        
         total_earnings = 0
         log_count = 0
         breakdown = {action: 0 for action in PAYMENT_AMOUNTS.keys()}
+        row_indices = []  # Für Archivierung
         
-        for row in values:
+        for i, row in enumerate(values):
             if len(row) >= 7:
                 if row[1] == week_key and row[3] == str(user_id):
                     action = row[4]
@@ -218,6 +326,7 @@ async def get_user_week_earnings(user_id: int) -> Dict[str, any]:
                     
                     total_earnings += amount
                     log_count += 1
+                    row_indices.append(i + 2)  # +2 wegen Header und 0-Index
                     
                     if action in breakdown:
                         breakdown[action] += 1
@@ -226,12 +335,13 @@ async def get_user_week_earnings(user_id: int) -> Dict[str, any]:
             'total': total_earnings,
             'logs': log_count,
             'breakdown': breakdown,
-            'week': week_key
+            'week': week_key,
+            'row_indices': row_indices
         }
         
     except Exception as e:
         print(f"❌ Fehler beim Abrufen der Earnings: {e}")
-        return {'total': 0, 'logs': 0, 'breakdown': {}, 'week': ''}
+        return {'total': 0, 'logs': 0, 'breakdown': {}, 'week': '', 'row_indices': []}
 
 
 async def save_log(user: discord.Member, action_type: str, description: str, image_url: str) -> bool:
@@ -242,16 +352,13 @@ async def save_log(user: discord.Member, action_type: str, description: str, ima
     try:
         sheet = bot.sheets_service.spreadsheets()
         
-        # Aktuelle Zeit
         now = datetime.now()
         timestamp = now.strftime("%d.%m.%Y %H:%M:%S")
         week_number = now.isocalendar()[1]
         year = now.year
         
-        # Betrag berechnen
         amount = PAYMENT_AMOUNTS.get(action_type, 0)
         
-        # Daten vorbereiten
         values = [[
             timestamp,
             f"KW{week_number}/{year}",
@@ -265,7 +372,6 @@ async def save_log(user: discord.Member, action_type: str, description: str, ima
         
         body = {'values': values}
         
-        # In Sheet eintragen
         result = sheet.values().append(
             spreadsheetId=SPREADSHEET_ID,
             range='Logs!A:H',
@@ -281,51 +387,38 @@ async def save_log(user: discord.Member, action_type: str, description: str, ima
         return False
 
 
-async def save_payout(user: discord.Member, amount: float, week: str, log_count: int) -> bool:
-    """
-    Speichere Auszahlung in Google Sheets (Auszahlungen Tab)
-    
-    Args:
-        user: Discord Member
-        amount: Auszahlungsbetrag
-        week: Kalenderwoche (z.B. "KW52/2024")
-        log_count: Anzahl Logs
-        
-    Returns:
-        True wenn erfolgreich
-    """
+async def save_payout(user_id: str, username: str, amount: float, week: str, log_count: int, admin_name: str) -> bool:
+    """Speichere Auszahlung in Google Sheets (Auszahlungen Tab)"""
     if not bot.sheets_service:
         return False
     
     try:
         sheet = bot.sheets_service.spreadsheets()
         
-        # Timestamp
         now = datetime.now()
         timestamp = now.strftime("%d.%m.%Y %H:%M:%S")
         
-        # Daten vorbereiten
         values = [[
             timestamp,
             week,
-            user.name,
-            str(user.id),
+            username,
+            str(user_id),
             amount,
             log_count,
-            "Ausgezahlt"
+            "Ausgezahlt",
+            admin_name
         ]]
         
         body = {'values': values}
         
-        # In Auszahlungen Tab eintragen
         result = sheet.values().append(
             spreadsheetId=SPREADSHEET_ID,
-            range='Auszahlungen!A:G',
+            range='Auszahlungen!A:H',
             valueInputOption='USER_ENTERED',
             body=body
         ).execute()
         
-        print(f"✅ Auszahlung gespeichert: {user.name} - {amount}€")
+        print(f"✅ Auszahlung gespeichert: {username} - {amount}€")
         return True
         
     except Exception as e:
@@ -333,22 +426,86 @@ async def save_payout(user: discord.Member, amount: float, week: str, log_count:
         return False
 
 
-async def reset_user_week_earnings(user_id: int) -> bool:
+async def archive_user_logs(user_id: int, week: str) -> bool:
     """
-    Setzt das Wochen-Guthaben eines Users zurück
-    WICHTIG: Logs bleiben erhalten, nur für Tracking
+    Verschiebe User-Logs ins Archiv
     
-    Args:
-        user_id: Discord User ID
-        
-    Returns:
-        True wenn erfolgreich
+    1. Kopiere Logs ins Archiv-Tab
+    2. Lösche aus Logs-Tab
     """
-    # In diesem System bleiben Logs erhalten
-    # Reset wird nur im Tracking-Tab gemacht
-    # Diese Funktion ist ein Platzhalter für zukünftige Features
-    print(f"ℹ️ User {user_id} Guthaben logisch zurückgesetzt (Logs bleiben)")
-    return True
+    if not bot.sheets_service:
+        return False
+    
+    try:
+        sheet = bot.sheets_service.spreadsheets()
+        
+        # Alle Logs abrufen
+        result = sheet.values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range='Logs!A2:H'
+        ).execute()
+        
+        values = result.get('values', [])
+        
+        # User-Logs finden
+        logs_to_archive = []
+        rows_to_delete = []
+        
+        for i, row in enumerate(values):
+            if len(row) >= 7:
+                if row[1] == week and row[3] == str(user_id):
+                    # Archiv-Datum hinzufügen
+                    archived_row = row + [datetime.now().strftime("%d.%m.%Y %H:%M:%S")]
+                    logs_to_archive.append(archived_row)
+                    rows_to_delete.append(i + 2)  # +2 für Header und 0-Index
+        
+        if not logs_to_archive:
+            return True  # Keine Logs zum Archivieren
+        
+        # 1. Ins Archiv kopieren
+        body = {'values': logs_to_archive}
+        sheet.values().append(
+            spreadsheetId=SPREADSHEET_ID,
+            range='Archiv!A:I',
+            valueInputOption='USER_ENTERED',
+            body=body
+        ).execute()
+        
+        # 2. Aus Logs löschen (von hinten nach vorne um Index-Probleme zu vermeiden)
+        rows_to_delete.sort(reverse=True)
+        
+        # Get Sheet ID für Logs
+        spreadsheet = sheet.get(spreadsheetId=SPREADSHEET_ID).execute()
+        logs_sheet_id = None
+        for s in spreadsheet.get('sheets', []):
+            if s['properties']['title'] == 'Logs':
+                logs_sheet_id = s['properties']['sheetId']
+                break
+        
+        if logs_sheet_id is not None:
+            requests = []
+            for row_idx in rows_to_delete:
+                requests.append({
+                    'deleteDimension': {
+                        'range': {
+                            'sheetId': logs_sheet_id,
+                            'dimension': 'ROWS',
+                            'startIndex': row_idx - 1,
+                            'endIndex': row_idx
+                        }
+                    }
+                })
+            
+            if requests:
+                body = {'requests': requests}
+                sheet.batchUpdate(spreadsheetId=SPREADSHEET_ID, body=body).execute()
+        
+        print(f"✅ {len(logs_to_archive)} Logs archiviert für User {user_id}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Fehler beim Archivieren: {e}")
+        return False
 
 
 async def get_user_stats(user_id: int) -> dict:
@@ -359,12 +516,10 @@ async def get_user_stats(user_id: int) -> dict:
     try:
         sheet = bot.sheets_service.spreadsheets()
         
-        # Aktuelle Kalenderwoche
         current_week = datetime.now().isocalendar()[1]
         current_year = datetime.now().year
         week_key = f"KW{current_week}/{current_year}"
         
-        # Alle Logs abrufen
         result = sheet.values().get(
             spreadsheetId=SPREADSHEET_ID,
             range='Logs!A2:H'
@@ -372,7 +527,6 @@ async def get_user_stats(user_id: int) -> dict:
         
         values = result.get('values', [])
         
-        # Statistiken berechnen
         stats = {action: 0 for action in PAYMENT_AMOUNTS.keys()}
         
         for row in values:
@@ -408,7 +562,6 @@ async def generate_weekly_stats() -> discord.Embed:
         
         values = result.get('values', [])
         
-        # Statistiken sammeln
         user_earnings = {}
         action_counts = {action: 0 for action in PAYMENT_AMOUNTS.keys()}
         
@@ -425,10 +578,10 @@ async def generate_weekly_stats() -> discord.Embed:
                 if action in action_counts:
                     action_counts[action] += 1
         
-        # 🎨 PREMIUM EMBED
+        # 🎨 METALLIC PURPLE EMBED
         embed = discord.Embed(
             title="",
-            color=COLORS['gold'],
+            color=COLORS['primary'],
             timestamp=datetime.utcnow()
         )
         
@@ -443,7 +596,6 @@ async def generate_weekly_stats() -> discord.Embed:
         if sorted_users:
             top_10 = sorted_users[:10]
             
-            # Medals für Top 3
             medals = ["🥇", "🥈", "🥉"]
             
             top_earners_text = ""
@@ -452,12 +604,12 @@ async def generate_weekly_stats() -> discord.Embed:
                 top_earners_text += f"{medal} **{user}**: `{amount:.2f}€`\n"
             
             embed.add_field(
-                name="💰 Top 10 Verdiener",
+                name="💎 Top 10 Verdiener",
                 value=top_earners_text,
                 inline=False
             )
         
-        # Aktionsstatistiken mit Emojis
+        # Aktionsstatistiken
         action_emojis = {
             'Düngen': '🌱',
             'Reparieren': '🔧',
@@ -487,9 +639,8 @@ async def generate_weekly_stats() -> discord.Embed:
             inline=True
         )
         
-        # Footer
         embed.set_footer(
-            text=f"Generiert am {datetime.now().strftime('%d.%m.%Y um %H:%M')} Uhr"
+            text=f"Generiert am {datetime.now().strftime('%d.%m.%Y um %H:%M')} Uhr • Metallic Purple Edition"
         )
         
         return embed
@@ -525,7 +676,7 @@ class ActionSelect(discord.ui.Select):
             )
         ]
         super().__init__(
-            placeholder="Wähle eine Aktion...",
+            placeholder="💜 Wähle eine Aktion...",
             options=options,
             min_values=1,
             max_values=1
@@ -563,11 +714,10 @@ class LogModal(discord.ui.Modal):
                        f"**Beschreibung:** {self.description.value}\n\n"
                        f"Bitte lade jetzt ein Bild als Beweis hoch.\n"
                        f"Du hast 60 Sekunden Zeit.",
-            color=COLORS['info']
+            color=COLORS['accent']
         )
         await interaction.followup.send(embed=embed, ephemeral=True)
         
-        # Auf Bild warten
         def check(m):
             return (m.author.id == interaction.user.id and 
                    len(m.attachments) > 0 and
@@ -577,7 +727,6 @@ class LogModal(discord.ui.Modal):
             message = await bot.wait_for('message', timeout=60.0, check=check)
             image_url = message.attachments[0].url
             
-            # Log speichern
             success = await save_log(
                 user=interaction.user,
                 action_type=self.action_type,
@@ -588,7 +737,7 @@ class LogModal(discord.ui.Modal):
             if success:
                 amount = PAYMENT_AMOUNTS[self.action_type]
                 
-                # 🎨 PREMIUM CONFIRMATION EMBED
+                # 🎨 METALLIC PURPLE CONFIRMATION
                 confirmation = discord.Embed(
                     title="",
                     color=COLORS['success'],
@@ -607,7 +756,7 @@ class LogModal(discord.ui.Modal):
                 )
                 
                 confirmation.add_field(
-                    name="💰 Auszahlung",
+                    name="💎 Auszahlung",
                     value=f"**{amount:.2f}€**",
                     inline=True
                 )
@@ -625,25 +774,24 @@ class LogModal(discord.ui.Modal):
                 )
                 
                 confirmation.set_thumbnail(url=image_url)
-                confirmation.set_footer(text=f"Eingereicht von {interaction.user.name}")
+                confirmation.set_footer(text=f"Eingereicht von {interaction.user.name} • Metallic Purple Edition")
                 
                 await interaction.followup.send(embed=confirmation, ephemeral=True)
                 
-                # 🎨 PREMIUM OUTPUT CHANNEL
+                # 🎨 OUTPUT CHANNEL
                 output_channel_id = os.getenv('LOG_OUTPUT_CHANNEL_ID', '')
                 
                 if output_channel_id:
                     output_channel = bot.get_channel(int(output_channel_id))
                     
                     if output_channel:
-                        # Action Emojis
                         action_emojis = {
                             'Düngen': '🌱',
                             'Reparieren': '🔧',
                             'Panel platziert': '⚡'
                         }
                         
-                        # 💎 PREMIUM PUBLIC EMBED
+                        # 💜 METALLIC PUBLIC EMBED
                         premium_embed = discord.Embed(
                             title="",
                             color=COLORS['primary'],
@@ -655,7 +803,6 @@ class LogModal(discord.ui.Modal):
                             icon_url=bot.user.display_avatar.url
                         )
                         
-                        # Main Content
                         premium_embed.add_field(
                             name="👤 Mitglied",
                             value=f"{interaction.user.mention}\n`{interaction.user.name}`",
@@ -670,19 +817,17 @@ class LogModal(discord.ui.Modal):
                         )
                         
                         premium_embed.add_field(
-                            name="💰 Auszahlung",
+                            name="💎 Auszahlung",
                             value=f"**{amount:.2f}€**",
                             inline=True
                         )
                         
-                        # Beschreibung
                         premium_embed.add_field(
                             name="📝 Beschreibung",
                             value=f"```\n{self.description.value}\n```",
                             inline=False
                         )
                         
-                        # Zeit & KW
                         now = datetime.now()
                         week_number = now.isocalendar()[1]
                         
@@ -712,14 +857,12 @@ class LogModal(discord.ui.Modal):
                                 inline=False
                             )
                         
-                        # Thumbnails & Images
                         premium_embed.set_thumbnail(url=interaction.user.display_avatar.url)
                         premium_embed.set_image(url=image_url)
                         
-                        # Footer mit Log Count
                         log_count = await get_total_log_count()
                         premium_embed.set_footer(
-                            text=f"Log #{log_count} • Discord Log Bot Premium",
+                            text=f"Log #{log_count} • Metallic Purple Edition",
                             icon_url=bot.user.display_avatar.url
                         )
                         
@@ -750,7 +893,7 @@ class LogView(discord.ui.View):
     
     @discord.ui.button(
         label="Meine Statistiken",
-        style=discord.ButtonStyle.primary,
+        style=discord.ButtonStyle.secondary,
         emoji="📊",
         custom_id="stats_button"
     )
@@ -758,13 +901,12 @@ class LogView(discord.ui.View):
         """Zeige persönliche Statistiken"""
         await interaction.response.defer(ephemeral=True)
         
-        # Hole detaillierte Stats
         user_stats = await get_user_week_earnings(interaction.user.id)
         
-        # 🎨 PREMIUM STATS EMBED
+        # 🎨 METALLIC STATS EMBED
         embed = discord.Embed(
             title="",
-            color=COLORS['purple'],
+            color=COLORS['chrome'],
             timestamp=datetime.utcnow()
         )
         
@@ -773,7 +915,6 @@ class LogView(discord.ui.View):
             icon_url=interaction.user.display_avatar.url
         )
         
-        # Breakdown
         action_emojis = {
             'Düngen': '🌱',
             'Reparieren': '🔧',
@@ -791,14 +932,12 @@ class LogView(discord.ui.View):
                     inline=True
                 )
         
-        # Gesamtverdienst
         embed.add_field(
-            name="💰 Gesamtverdienst (diese Woche)",
+            name="💎 Gesamtverdienst (diese Woche)",
             value=f"**{user_stats['total']:.2f}€**",
             inline=False
         )
         
-        # Progress Bar
         if user_stats['logs'] > 0:
             progress = create_progress_bar(user_stats['logs'], 50)
             embed.add_field(
@@ -808,9 +947,366 @@ class LogView(discord.ui.View):
             )
         
         embed.set_thumbnail(url=interaction.user.display_avatar.url)
-        embed.set_footer(text="Statistiken werden live aktualisiert")
+        embed.set_footer(text="Statistiken werden live aktualisiert • Metallic Purple Edition")
         
         await interaction.followup.send(embed=embed, ephemeral=True)
+
+
+# ==================== PAYOUT PANEL COMPONENTS ====================
+
+class PayoutUserSelect(discord.ui.Select):
+    """Dropdown für User-Auswahl im Auszahlungs-Panel"""
+    def __init__(self, users: List[Dict]):
+        self.users_data = users
+        
+        options = []
+        for user in users[:25]:  # Discord limit: 25 Optionen
+            options.append(
+                discord.SelectOption(
+                    label=f"{user['username']}",
+                    description=f"💎 {user['total']:.2f}€ • {user['logs']} Logs",
+                    value=user['user_id'],
+                    emoji="👤"
+                )
+            )
+        
+        if not options:
+            options.append(
+                discord.SelectOption(
+                    label="Keine User verfügbar",
+                    value="none"
+                )
+            )
+        
+        super().__init__(
+            placeholder="👤 User für Auszahlung auswählen...",
+            options=options,
+            min_values=1,
+            max_values=1
+        )
+    
+    async def callback(self, interaction: discord.Interaction):
+        if self.values[0] == "none":
+            await interaction.response.send_message("❌ Keine User verfügbar.", ephemeral=True)
+            return
+        
+        user_id = self.values[0]
+        user_data = next((u for u in self.users_data if u['user_id'] == user_id), None)
+        
+        if not user_data:
+            await interaction.response.send_message("❌ User nicht gefunden.", ephemeral=True)
+            return
+        
+        # Bestätigungs-View
+        view = PayoutConfirmView(user_data, interaction.user)
+        
+        embed = discord.Embed(
+            title="💎 Auszahlung bestätigen",
+            description=f"Möchtest du **{user_data['username']}** auszahlen?",
+            color=COLORS['accent']
+        )
+        
+        embed.add_field(name="💰 Betrag", value=f"**{user_data['total']:.2f}€**", inline=True)
+        embed.add_field(name="📊 Logs", value=f"**{user_data['logs']}**", inline=True)
+        
+        # Breakdown
+        action_emojis = {'Düngen': '🌱', 'Reparieren': '🔧', 'Panel platziert': '⚡'}
+        breakdown_text = ""
+        for action, count in user_data['breakdown'].items():
+            if count > 0:
+                emoji = action_emojis.get(action, '📌')
+                breakdown_text += f"{emoji} {action}: **{count}x**\n"
+        
+        if breakdown_text:
+            embed.add_field(name="📋 Breakdown", value=breakdown_text, inline=False)
+        
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+
+
+class PayoutConfirmView(discord.ui.View):
+    """Bestätigungs-View für Einzelauszahlung"""
+    def __init__(self, user_data: Dict, admin: discord.Member):
+        super().__init__(timeout=60)
+        self.user_data = user_data
+        self.admin = admin
+    
+    @discord.ui.button(label="✅ Auszahlen", style=discord.ButtonStyle.success)
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
+        
+        # Führe Auszahlung durch
+        success = await process_single_payout(
+            self.user_data,
+            interaction.guild,
+            self.admin
+        )
+        
+        if success:
+            embed = discord.Embed(
+                title="✅ Auszahlung erfolgreich!",
+                description=f"**{self.user_data['username']}** wurde **{self.user_data['total']:.2f}€** ausgezahlt.",
+                color=COLORS['success']
+            )
+            embed.add_field(name="📊 Logs archiviert", value=f"**{self.user_data['logs']}**", inline=True)
+            await interaction.followup.send(embed=embed, ephemeral=True)
+        else:
+            await interaction.followup.send("❌ Fehler bei der Auszahlung.", ephemeral=True)
+        
+        self.stop()
+    
+    @discord.ui.button(label="❌ Abbrechen", style=discord.ButtonStyle.danger)
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("❌ Auszahlung abgebrochen.", ephemeral=True)
+        self.stop()
+
+
+class PayoutAllConfirmView(discord.ui.View):
+    """Bestätigungs-View für Alle Auszahlen"""
+    def __init__(self, users: List[Dict], admin: discord.Member, guild: discord.Guild):
+        super().__init__(timeout=120)
+        self.users = users
+        self.admin = admin
+        self.guild = guild
+    
+    @discord.ui.button(label="✅ JA, ALLE AUSZAHLEN", style=discord.ButtonStyle.success)
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
+        
+        total_amount = sum(u['total'] for u in self.users)
+        total_users = len(self.users)
+        
+        # Progress Message
+        progress_embed = discord.Embed(
+            title="⏳ Auszahlungen werden verarbeitet...",
+            description=f"0 / {total_users} User",
+            color=COLORS['accent']
+        )
+        progress_msg = await interaction.followup.send(embed=progress_embed, ephemeral=True)
+        
+        success_count = 0
+        failed_count = 0
+        
+        for i, user_data in enumerate(self.users):
+            success = await process_single_payout(user_data, self.guild, self.admin)
+            
+            if success:
+                success_count += 1
+            else:
+                failed_count += 1
+            
+            # Update Progress alle 3 User
+            if (i + 1) % 3 == 0 or i == total_users - 1:
+                progress_embed.description = f"{i + 1} / {total_users} User verarbeitet..."
+                await progress_msg.edit(embed=progress_embed)
+            
+            # Rate limiting
+            await asyncio.sleep(0.5)
+        
+        # Final Message
+        final_embed = discord.Embed(
+            title="✅ Alle Auszahlungen abgeschlossen!",
+            color=COLORS['success'],
+            timestamp=datetime.utcnow()
+        )
+        
+        final_embed.add_field(name="✅ Erfolgreich", value=f"**{success_count}**", inline=True)
+        final_embed.add_field(name="❌ Fehlgeschlagen", value=f"**{failed_count}**", inline=True)
+        final_embed.add_field(name="💎 Gesamtbetrag", value=f"**{total_amount:.2f}€**", inline=True)
+        
+        await progress_msg.edit(embed=final_embed)
+        self.stop()
+    
+    @discord.ui.button(label="❌ ABBRECHEN", style=discord.ButtonStyle.danger)
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("❌ Auszahlung abgebrochen.", ephemeral=True)
+        self.stop()
+
+
+class PayoutPanelView(discord.ui.View):
+    """Hauptansicht für das Auszahlungs-Panel"""
+    def __init__(self, users: List[Dict]):
+        super().__init__(timeout=300)
+        self.users = users
+        
+        if users:
+            self.add_item(PayoutUserSelect(users))
+    
+    @discord.ui.button(label="💎 Alle Auszahlen", style=discord.ButtonStyle.primary, emoji="💰", row=1)
+    async def payout_all(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if not self.users:
+            await interaction.response.send_message("❌ Keine User mit offenem Guthaben.", ephemeral=True)
+            return
+        
+        total_amount = sum(u['total'] for u in self.users)
+        total_users = len(self.users)
+        
+        # Bestätigungs-Embed
+        embed = discord.Embed(
+            title="⚠️ ALLE AUSZAHLEN - BESTÄTIGUNG",
+            description=(
+                f"Du bist dabei, **{total_users} User** auszuzahlen.\n\n"
+                f"💎 **Gesamtbetrag:** {total_amount:.2f}€\n\n"
+                f"Diese Aktion kann nicht rückgängig gemacht werden!\n"
+                f"Alle Logs werden ins Archiv verschoben."
+            ),
+            color=COLORS['warning']
+        )
+        
+        view = PayoutAllConfirmView(self.users, interaction.user, interaction.guild)
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+    
+    @discord.ui.button(label="🔄 Aktualisieren", style=discord.ButtonStyle.secondary, emoji="🔄", row=1)
+    async def refresh(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
+        
+        # Neu laden
+        users = await get_all_users_with_earnings()
+        
+        if not users:
+            embed = discord.Embed(
+                title="💜 Auszahlungs-Panel",
+                description="✅ Keine offenen Auszahlungen vorhanden.",
+                color=COLORS['primary']
+            )
+            await interaction.followup.send(embed=embed, ephemeral=True)
+            return
+        
+        # Neues Panel
+        embed = create_payout_panel_embed(users)
+        view = PayoutPanelView(users)
+        
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+    
+    @discord.ui.button(label="❌ Schließen", style=discord.ButtonStyle.danger, emoji="❌", row=1)
+    async def close(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Panel geschlossen.", ephemeral=True)
+        self.stop()
+
+
+async def process_single_payout(user_data: Dict, guild: discord.Guild, admin: discord.Member) -> bool:
+    """Führe eine einzelne Auszahlung durch"""
+    try:
+        user_id = int(user_data['user_id'])
+        week = user_data.get('week', f"KW{datetime.now().isocalendar()[1]}/{datetime.now().year}")
+        
+        # Versuche Member zu finden
+        member = guild.get_member(user_id)
+        
+        # 1. DM senden (wenn möglich)
+        if member:
+            try:
+                dm_embed = discord.Embed(
+                    title="",
+                    color=COLORS['gold'],
+                    timestamp=datetime.utcnow()
+                )
+                
+                dm_embed.set_author(
+                    name="💎 AUSZAHLUNG ERFOLGREICH",
+                    icon_url=guild.icon.url if guild.icon else None
+                )
+                
+                dm_embed.description = f"Hallo **{member.display_name}**!\n\nDeine Auszahlung wurde veranlasst:"
+                
+                dm_embed.add_field(name="📅 Zeitraum", value=f"**{week}**", inline=True)
+                dm_embed.add_field(name="💎 Betrag", value=f"**{user_data['total']:.2f}€**", inline=True)
+                dm_embed.add_field(name="📋 Logs", value=f"**{user_data['logs']}**", inline=True)
+                
+                action_emojis = {'Düngen': '🌱', 'Reparieren': '🔧', 'Panel platziert': '⚡'}
+                breakdown_text = ""
+                for action, count in user_data['breakdown'].items():
+                    if count > 0:
+                        emoji = action_emojis.get(action, '📌')
+                        earnings = count * PAYMENT_AMOUNTS.get(action, 0)
+                        breakdown_text += f"{emoji} **{action}**: {count}x (**{earnings:.2f}€**)\n"
+                
+                if breakdown_text:
+                    dm_embed.add_field(name="📊 Breakdown", value=breakdown_text, inline=False)
+                
+                dm_embed.add_field(
+                    name="🎉 Status",
+                    value="Dein Guthaben wurde zurückgesetzt.\n**Viel Erfolg in der neuen Woche!** 🚀",
+                    inline=False
+                )
+                
+                dm_embed.set_thumbnail(url=member.display_avatar.url)
+                dm_embed.set_footer(text="Metallic Purple Edition • Auszahlung")
+                
+                await member.send(embed=dm_embed)
+                
+            except discord.Forbidden:
+                print(f"⚠️ Konnte DM nicht senden an {user_data['username']}")
+        
+        # 2. In Sheets speichern
+        await save_payout(
+            user_id=user_data['user_id'],
+            username=user_data['username'],
+            amount=user_data['total'],
+            week=week,
+            log_count=user_data['logs'],
+            admin_name=admin.name
+        )
+        
+        # 3. Logs archivieren
+        await archive_user_logs(user_id, week)
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Fehler bei Auszahlung für {user_data['username']}: {e}")
+        return False
+
+
+def create_payout_panel_embed(users: List[Dict]) -> discord.Embed:
+    """Erstelle das Auszahlungs-Panel Embed"""
+    current_week = datetime.now().isocalendar()[1]
+    current_year = datetime.now().year
+    week_key = f"KW{current_week}/{current_year}"
+    
+    embed = discord.Embed(
+        title="",
+        color=COLORS['primary'],
+        timestamp=datetime.utcnow()
+    )
+    
+    embed.set_author(
+        name=f"💎 AUSZAHLUNGS-PANEL • {week_key}",
+        icon_url=bot.user.display_avatar.url
+    )
+    
+    if not users:
+        embed.description = "✅ Keine offenen Auszahlungen vorhanden."
+        return embed
+    
+    # User-Liste
+    user_list = ""
+    total_amount = 0
+    total_logs = 0
+    
+    for i, user in enumerate(users[:10], 1):
+        medal = "🥇" if i == 1 else ("🥈" if i == 2 else ("🥉" if i == 3 else f"`{i}.`"))
+        user_list += f"{medal} **{user['username']}** │ {user['logs']} Logs │ **{user['total']:.2f}€**\n"
+        total_amount += user['total']
+        total_logs += user['logs']
+    
+    if len(users) > 10:
+        user_list += f"\n*... und {len(users) - 10} weitere User*"
+    
+    embed.add_field(
+        name="👥 User mit offenem Guthaben",
+        value=user_list if user_list else "Keine",
+        inline=False
+    )
+    
+    # Zusammenfassung
+    embed.add_field(name="👥 Gesamt User", value=f"**{len(users)}**", inline=True)
+    embed.add_field(name="📊 Gesamt Logs", value=f"**{total_logs}**", inline=True)
+    embed.add_field(name="💎 Gesamt Betrag", value=f"**{total_amount:.2f}€**", inline=True)
+    
+    embed.set_footer(text="Wähle einen User aus oder zahle alle auf einmal aus • Metallic Purple Edition")
+    
+    return embed
+
 
 # ==================== SLASH COMMANDS ====================
 
@@ -823,7 +1319,7 @@ async def log_command(interaction: discord.Interaction):
     )
     
     embed.set_author(
-        name="📝 Log-System",
+        name="💜 Log-System",
         icon_url=bot.user.display_avatar.url
     )
     
@@ -835,28 +1331,43 @@ async def log_command(interaction: discord.Interaction):
         f"⚡ Panel platziert - **{PAYMENT_AMOUNTS['Panel platziert']:.2f}€**"
     )
     
+    embed.set_footer(text="Metallic Purple Edition")
+    
     view = LogView()
     await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
 
-@bot.tree.command(name="auszahlung", description="Zahle einem Mitglied sein Wochenguthaben aus (Admin)")
-@app_commands.describe(
-    mitglied="Das Mitglied das ausgezahlt werden soll"
-)
-@app_commands.checks.has_permissions(administrator=True)
-async def payout_command(interaction: discord.Interaction, mitglied: discord.Member):
-    """
-    💰 AUSZAHLUNGS-COMMAND
-    
-    Funktion:
-    1. Berechnet Wochenguthaben des Users
-    2. Sendet detaillierte DM an User
-    3. Speichert Auszahlung in Google Sheets
-    4. Postet Bestätigung im Channel
-    """
+@bot.tree.command(name="panel", description="Öffne das Auszahlungs-Panel")
+@has_payout_permission()
+async def panel_command(interaction: discord.Interaction):
+    """Interaktives Auszahlungs-Panel"""
     await interaction.response.defer(ephemeral=True)
     
-    # Hole User Earnings
+    # Hole alle User mit Guthaben
+    users = await get_all_users_with_earnings()
+    
+    # Woche zu jedem User hinzufügen
+    current_week = datetime.now().isocalendar()[1]
+    current_year = datetime.now().year
+    week_key = f"KW{current_week}/{current_year}"
+    
+    for user in users:
+        user['week'] = week_key
+    
+    # Erstelle Panel
+    embed = create_payout_panel_embed(users)
+    view = PayoutPanelView(users)
+    
+    await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+
+
+@bot.tree.command(name="auszahlung", description="Zahle einem Mitglied sein Wochenguthaben aus")
+@app_commands.describe(mitglied="Das Mitglied das ausgezahlt werden soll")
+@has_payout_permission()
+async def payout_command(interaction: discord.Interaction, mitglied: discord.Member):
+    """Schnelle Einzelauszahlung"""
+    await interaction.response.defer(ephemeral=True)
+    
     user_earnings = await get_user_week_earnings(mitglied.id)
     
     if user_earnings['total'] == 0:
@@ -866,133 +1377,112 @@ async def payout_command(interaction: discord.Interaction, mitglied: discord.Mem
         )
         return
     
-    # 💌 SENDE DM AN USER
-    try:
-        # 🎨 PREMIUM DM EMBED
-        dm_embed = discord.Embed(
-            title="",
-            color=COLORS['gold'],
-            timestamp=datetime.utcnow()
-        )
-        
-        dm_embed.set_author(
-            name="💰 AUSZAHLUNG ERFOLGREICH",
-            icon_url=bot.user.display_avatar.url
-        )
-        
-        dm_embed.description = f"Hallo **{mitglied.display_name}**!\n\nDeine Auszahlung wurde veranlasst:"
-        
-        # Zeitraum & Betrag
-        dm_embed.add_field(
-            name="📅 Zeitraum",
-            value=f"**{user_earnings['week']}**",
-            inline=True
-        )
-        
-        dm_embed.add_field(
-            name="💵 Betrag",
-            value=f"**{user_earnings['total']:.2f}€**",
-            inline=True
-        )
-        
-        dm_embed.add_field(
-            name="📋 Logs gesamt",
-            value=f"**{user_earnings['logs']}**",
-            inline=True
-        )
-        
-        # Breakdown
-        action_emojis = {
-            'Düngen': '🌱',
-            'Reparieren': '🔧',
-            'Panel platziert': '⚡'
-        }
-        
-        breakdown_text = ""
-        for action, count in user_earnings['breakdown'].items():
-            if count > 0:
-                emoji = action_emojis.get(action, '📌')
-                earnings = count * PAYMENT_AMOUNTS[action]
-                breakdown_text += f"{emoji} **{action}**: {count}x (**{earnings:.2f}€**)\n"
-        
-        if breakdown_text:
-            dm_embed.add_field(
-                name="📊 Breakdown",
-                value=breakdown_text,
-                inline=False
+    # User-Data formatieren
+    user_data = {
+        'user_id': str(mitglied.id),
+        'username': mitglied.name,
+        'total': user_earnings['total'],
+        'logs': user_earnings['logs'],
+        'breakdown': user_earnings['breakdown'],
+        'week': user_earnings['week']
+    }
+    
+    # Bestätigungs-View
+    view = PayoutConfirmView(user_data, interaction.user)
+    
+    embed = discord.Embed(
+        title="💎 Auszahlung bestätigen",
+        description=f"Möchtest du **{mitglied.mention}** auszahlen?",
+        color=COLORS['accent']
+    )
+    
+    embed.add_field(name="💰 Betrag", value=f"**{user_earnings['total']:.2f}€**", inline=True)
+    embed.add_field(name="📊 Logs", value=f"**{user_earnings['logs']}**", inline=True)
+    embed.add_field(name="📅 Woche", value=f"**{user_earnings['week']}**", inline=True)
+    
+    await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+
+
+@bot.tree.command(name="config", description="Konfiguriere Auszahlungs-Berechtigungen")
+@app_commands.describe(
+    aktion="Was möchtest du tun?",
+    rolle="Die Rolle die hinzugefügt/entfernt werden soll"
+)
+@app_commands.choices(aktion=[
+    app_commands.Choice(name="➕ Rolle hinzufügen", value="add"),
+    app_commands.Choice(name="➖ Rolle entfernen", value="remove"),
+    app_commands.Choice(name="📋 Rollen anzeigen", value="list")
+])
+@app_commands.checks.has_permissions(administrator=True)
+async def config_command(
+    interaction: discord.Interaction,
+    aktion: str,
+    rolle: Optional[discord.Role] = None
+):
+    """Konfiguriere berechtigte Rollen"""
+    global PAYOUT_ROLE_IDS
+    
+    if aktion == "list":
+        if not PAYOUT_ROLE_IDS:
+            await interaction.response.send_message(
+                "📋 Keine Rollen konfiguriert. Nur Admins können auszahlen.",
+                ephemeral=True
             )
+            return
         
-        # Motivational Message
-        dm_embed.add_field(
-            name="🎉 Status",
-            value="Dein Guthaben wurde zurückgesetzt.\n**Viel Erfolg in der neuen Woche!** 🚀",
-            inline=False
+        roles_text = ""
+        for role_id in PAYOUT_ROLE_IDS:
+            role = interaction.guild.get_role(role_id)
+            if role:
+                roles_text += f"• {role.mention}\n"
+            else:
+                roles_text += f"• `{role_id}` (nicht gefunden)\n"
+        
+        embed = discord.Embed(
+            title="🔐 Berechtigte Rollen",
+            description=roles_text,
+            color=COLORS['primary']
         )
-        
-        dm_embed.set_thumbnail(url=mitglied.display_avatar.url)
-        dm_embed.set_footer(text="Discord Log Bot Premium • Auszahlung")
-        
-        await mitglied.send(embed=dm_embed)
-        
-    except discord.Forbidden:
-        await interaction.followup.send(
-            f"⚠️ Konnte {mitglied.mention} keine DM senden (DMs deaktiviert).",
-            ephemeral=True
-        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
         return
     
-    # 💾 SPEICHERE AUSZAHLUNG
-    success = await save_payout(
-        user=mitglied,
-        amount=user_earnings['total'],
-        week=user_earnings['week'],
-        log_count=user_earnings['logs']
-    )
-    
-    if not success:
-        await interaction.followup.send(
-            "❌ Fehler beim Speichern der Auszahlung in Google Sheets.",
-            ephemeral=True
-        )
+    if not rolle:
+        await interaction.response.send_message("❌ Bitte gib eine Rolle an.", ephemeral=True)
         return
     
-    # RESET User Guthaben (logisch)
-    await reset_user_week_earnings(mitglied.id)
-    
-    # ✅ BESTÄTIGUNG AN ADMIN
-    confirmation = discord.Embed(
-        title="✅ Auszahlung durchgeführt",
-        description=f"**{mitglied.mention}** wurde **{user_earnings['total']:.2f}€** ausgezahlt.",
-        color=COLORS['success']
-    )
-    
-    confirmation.add_field(
-        name="📋 Details",
-        value=f"Zeitraum: {user_earnings['week']}\nLogs: {user_earnings['logs']}",
-        inline=False
-    )
-    
-    await interaction.followup.send(embed=confirmation, ephemeral=True)
-    
-    # 📢 ÖFFENTLICHE NOTIFICATION (optional)
-    output_channel_id = os.getenv('LOG_OUTPUT_CHANNEL_ID', '')
-    if output_channel_id:
-        output_channel = bot.get_channel(int(output_channel_id))
-        if output_channel:
-            public_embed = discord.Embed(
-                title="💰 Auszahlung durchgeführt",
-                description=f"**{mitglied.display_name}** wurde **{user_earnings['total']:.2f}€** ausgezahlt!",
-                color=COLORS['gold'],
-                timestamp=datetime.utcnow()
+    if aktion == "add":
+        if rolle.id not in PAYOUT_ROLE_IDS:
+            PAYOUT_ROLE_IDS.append(rolle.id)
+            save_config()
+            await interaction.response.send_message(
+                f"✅ {rolle.mention} kann jetzt Auszahlungen durchführen.",
+                ephemeral=True
             )
-            public_embed.set_thumbnail(url=mitglied.display_avatar.url)
-            await output_channel.send(embed=public_embed)
+        else:
+            await interaction.response.send_message(
+                f"ℹ️ {rolle.mention} hat bereits Berechtigung.",
+                ephemeral=True
+            )
+    
+    elif aktion == "remove":
+        if rolle.id in PAYOUT_ROLE_IDS:
+            PAYOUT_ROLE_IDS.remove(rolle.id)
+            save_config()
+            await interaction.response.send_message(
+                f"✅ {rolle.mention} kann keine Auszahlungen mehr durchführen.",
+                ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                f"ℹ️ {rolle.mention} hatte keine Berechtigung.",
+                ephemeral=True
+            )
 
 
 @bot.tree.command(name="wochenbericht", description="Zeige den aktuellen Wochenbericht")
-@app_commands.checks.has_permissions(administrator=True)
+@has_payout_permission()
 async def weekly_report_command(interaction: discord.Interaction):
-    """Manueller Wochenbericht (nur für Admins)"""
+    """Manueller Wochenbericht"""
     await interaction.response.defer()
     embed = await generate_weekly_stats()
     await interaction.followup.send(embed=embed)
@@ -1001,7 +1491,7 @@ async def weekly_report_command(interaction: discord.Interaction):
 @bot.tree.command(name="setup", description="Erstelle das Google Sheet (nur einmal ausführen)")
 @app_commands.checks.has_permissions(administrator=True)
 async def setup_command(interaction: discord.Interaction):
-    """Erstelle die Sheets-Struktur"""
+    """Erstelle die Sheets-Struktur inkl. Archiv"""
     await interaction.response.defer(ephemeral=True)
     
     if not bot.sheets_service:
@@ -1023,43 +1513,31 @@ async def setup_command(interaction: discord.Interaction):
         ).execute()
         
         # 2. AUSZAHLUNGEN TAB
-        payout_headers = [['Zeitstempel', 'KW', 'Username', 'User-ID', 'Betrag', 'Anzahl Logs', 'Status']]
+        payout_headers = [['Zeitstempel', 'KW', 'Username', 'User-ID', 'Betrag', 'Anzahl Logs', 'Status', 'Admin']]
         
         body = {'values': payout_headers}
         sheet.values().update(
             spreadsheetId=SPREADSHEET_ID,
-            range='Auszahlungen!A1:G1',
+            range='Auszahlungen!A1:H1',
             valueInputOption='RAW',
             body=body
         ).execute()
         
-        # Formatierung
-        requests = [
-            # Logs Header
-            {
-                'repeatCell': {
-                    'range': {
-                        'sheetId': 0,
-                        'startRowIndex': 0,
-                        'endRowIndex': 1
-                    },
-                    'cell': {
-                        'userEnteredFormat': {
-                            'backgroundColor': {'red': 0.26, 'green': 0.52, 'blue': 0.96},
-                            'textFormat': {'bold': True, 'foregroundColor': {'red': 1, 'green': 1, 'blue': 1}}
-                        }
-                    },
-                    'fields': 'userEnteredFormat(backgroundColor,textFormat)'
-                }
-            }
-        ]
+        # 3. ARCHIV TAB
+        archiv_headers = [['Zeitstempel', 'KW', 'Username', 'User-ID', 'Aktion', 'Beschreibung', 'Betrag', 'Bild-URL', 'Archiviert am']]
         
-        body = {'requests': requests}
-        sheet.batchUpdate(spreadsheetId=SPREADSHEET_ID, body=body).execute()
+        body = {'values': archiv_headers}
+        sheet.values().update(
+            spreadsheetId=SPREADSHEET_ID,
+            range='Archiv!A1:I1',
+            valueInputOption='RAW',
+            body=body
+        ).execute()
         
         await interaction.followup.send(
             "✅ Sheet erfolgreich eingerichtet!\n"
-            "📋 Tabs erstellt: Logs, Auszahlungen",
+            "📋 Tabs erstellt: Logs, Auszahlungen, Archiv\n\n"
+            "💡 Tipp: Führe `/designer` aus für Premium-Design!",
             ephemeral=True
         )
         
@@ -1072,45 +1550,71 @@ async def help_command(interaction: discord.Interaction):
     """Hilfe-Command"""
     embed = discord.Embed(
         title="",
-        color=COLORS['info']
+        color=COLORS['primary']
     )
     
     embed.set_author(
-        name="🤖 Bot Befehle",
+        name="💜 Bot Befehle",
         icon_url=bot.user.display_avatar.url
     )
     
     embed.add_field(
-        name="/log",
+        name="📝 `/log`",
         value="Öffne das Log-System zum Einreichen von Aktionen",
         inline=False
     )
     
     embed.add_field(
-        name="/auszahlung @user",
-        value="Zahle einem Mitglied sein Wochenguthaben aus (nur Admins)",
+        name="💎 `/panel`",
+        value="Öffne das interaktive Auszahlungs-Panel (Berechtigung nötig)",
         inline=False
     )
     
     embed.add_field(
-        name="/wochenbericht",
-        value="Zeige den aktuellen Wochenbericht (nur Admins)",
+        name="💰 `/auszahlung @user`",
+        value="Schnelle Einzelauszahlung (Berechtigung nötig)",
         inline=False
     )
     
     embed.add_field(
-        name="/setup",
+        name="🔐 `/config`",
+        value="Konfiguriere berechtigte Rollen (nur Admins)",
+        inline=False
+    )
+    
+    embed.add_field(
+        name="📊 `/wochenbericht`",
+        value="Zeige den aktuellen Wochenbericht (Berechtigung nötig)",
+        inline=False
+    )
+    
+    embed.add_field(
+        name="⚙️ `/setup`",
         value="Richte das Google Sheet ein (nur einmal, nur Admins)",
         inline=False
     )
     
-    embed.add_field(
-        name="📊 Button: Meine Statistiken",
-        value="Klicke auf den Button im Log-System um deine persönlichen Stats zu sehen",
-        inline=False
-    )
+    embed.set_footer(text="Metallic Purple Edition v2.1.0")
     
     await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+# ==================== ERROR HANDLER ====================
+
+@panel_command.error
+@payout_command.error
+@weekly_report_command.error
+async def payout_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.CheckFailure):
+        embed = discord.Embed(
+            title="🔒 Keine Berechtigung",
+            description="Du hast keine Berechtigung für diesen Befehl.\n\n"
+                       "Benötigt: Administrator oder konfigurierte Rolle",
+            color=COLORS['danger']
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    else:
+        raise error
 
 
 # ==================== BOT START ====================
@@ -1121,9 +1625,10 @@ if __name__ == "__main__":
         print("❌ DISCORD_TOKEN fehlt in der .env Datei!")
     else:
         print("\n" + "="*60)
-        print("🎨 DISCORD LOG BOT - PREMIUM EDITION")
+        print("💜 DISCORD LOG BOT - METALLIC PURPLE EDITION")
         print("="*60)
         print(f"Version: {__version__}")
         print(f"Author: {__author__}")
+        print(f"Colors: Classic Purple / Dark Chrome / Metallic Lilac")
         print("="*60 + "\n")
         bot.run(TOKEN)
