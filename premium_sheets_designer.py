@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-🎨 METALLIC PURPLE SHEETS DESIGNER
-Premium Google Sheets Design mit Chrome/Öleffekt
+🎨 METALLIC PURPLE SHEETS DESIGNER + PLANTAGEN
+Premium Google Sheets Design mit Chrome/Öleffekt + Ananas-Plantagen Tab
 
 Author: xPerpleXz
-Version: 2.1.0 - Metallic Purple Edition
+Version: 2.2.0 - Metallic Purple Edition + Ananas-Plantagen
 License: MIT
 
 Features:
 - Metallic Purple Farbpalette
 - Chrome/Öl Effekt Styling
-- 4 Premium Tabs (Logs, Dashboard, Auszahlungen, Archiv)
+- 5 Premium Tabs (Logs, Dashboard, Auszahlungen, Archiv, Plantagen)
 - Bedingte Formatierung
 - Live-Formeln & Dashboard
 - Dropdown-Menüs
+- Plantagen-Tracking
 """
 
 from google.oauth2.service_account import Credentials
@@ -52,6 +53,10 @@ COLORS = {
     'chrome_1': {'red': 0.482, 'green': 0.173, 'blue': 0.749},       # #7B2CBF Gradient 1
     'chrome_2': {'red': 0.878, 'green': 0.667, 'blue': 1.000},       # #E0AAFF Gradient 2
     'gold': {'red': 1.000, 'green': 0.843, 'blue': 0.000},           # #FFD700 Gold
+    
+    # Plantagen
+    'green': {'red': 0.000, 'green': 0.800, 'blue': 0.000},          # #00CC00 Green
+    'green_light': {'red': 0.800, 'green': 1.000, 'blue': 0.800},    # #CCFFCC Light Green
 }
 
 
@@ -90,7 +95,8 @@ def get_or_create_sheets(service):
             'Logs': {'color': COLORS['primary'], 'cols': 8, 'rows': 1000},
             '📊 Dashboard': {'color': COLORS['success'], 'cols': 12, 'rows': 50},
             'Auszahlungen': {'color': COLORS['gold'], 'cols': 8, 'rows': 1000},
-            'Archiv': {'color': COLORS['secondary'], 'cols': 9, 'rows': 5000}
+            'Archiv': {'color': COLORS['secondary'], 'cols': 9, 'rows': 5000},
+            '🌱 Plantagen': {'color': COLORS['green'], 'cols': 9, 'rows': 1000}  # NEU
         }
         
         requests = []
@@ -268,8 +274,24 @@ def design_logs_tab(service, sheet_id):
         }
     })
     
+    # Plantage = Grün
+    requests.append({
+        'addConditionalFormatRule': {
+            'rule': {
+                'ranges': [{'sheetId': sheet_id, 'startColumnIndex': 4, 'endColumnIndex': 5, 'startRowIndex': 1, 'endRowIndex': 1000}],
+                'booleanRule': {
+                    'condition': {'type': 'TEXT_CONTAINS', 'values': [{'userEnteredValue': 'Plantage'}]},
+                    'format': {
+                        'textFormat': {'foregroundColor': COLORS['green'], 'bold': True}
+                    }
+                }
+            },
+            'index': 6
+        }
+    })
+    
     # 6. Column Widths
-    widths = [160, 100, 140, 150, 130, 300, 100, 350]
+    widths = [160, 100, 140, 150, 150, 300, 100, 350]
     for i, width in enumerate(widths):
         requests.append({
             'updateDimensionProperties': {
@@ -327,7 +349,7 @@ def design_dashboard_tab(service, sheet_id):
     # Dashboard Daten
     dashboard_data = [
         # Row 1: Title
-        ['💜 STATISTIK DASHBOARD - METALLIC PURPLE EDITION', '', '', '', '', '', '', '', '', '', '', ''],
+        ['💜 STATISTIK DASHBOARD - METALLIC PURPLE EDITION + PLANTAGEN', '', '', '', '', '', '', '', '', '', '', ''],
         # Row 2: Empty
         ['', '', '', '', '', '', '', '', '', '', '', ''],
         # Row 3: Section Headers
@@ -352,25 +374,25 @@ def design_dashboard_tab(service, sheet_id):
         ['🔧 Reparieren', '=COUNTIF(Logs!E:E,"Reparieren")', '=SUMIF(Logs!E:E,"Reparieren",Logs!G:G)', '=IFERROR(AVERAGEIF(Logs!E:E,"Reparieren",Logs!G:G),0)', '', '', 'Im Archiv:', '=COUNTA(Archiv!A:A)-1', '', '', '', ''],
         # Row 13: Panel
         ['⚡ Panel platziert', '=COUNTIF(Logs!E:E,"Panel platziert")', '=SUMIF(Logs!E:E,"Panel platziert",Logs!G:G)', '=IFERROR(AVERAGEIF(Logs!E:E,"Panel platziert",Logs!G:G),0)', '', '', '', '', '', '', '', ''],
-        # Row 14: Empty
+        # Row 14: Plantage gesät
+        ['🌾 Plantage gesät', '=COUNTIF(Logs!E:E,"Plantage gesät")', '=SUMIF(Logs!E:E,"Plantage gesät",Logs!G:G)', '=IFERROR(AVERAGEIF(Logs!E:E,"Plantage gesät",Logs!G:G),0)', '', '', '', '', '', '', '', ''],
+        # Row 15: Plantage geerntet
+        ['🌱 Plantage geerntet', '=COUNTIF(Logs!E:E,"Plantage geerntet")', '=SUMIF(Logs!E:E,"Plantage geerntet",Logs!G:G)', '=IFERROR(AVERAGEIF(Logs!E:E,"Plantage geerntet",Logs!G:G),0)', '', '', '', '', '', '', '', ''],
+        # Row 16: Empty
         ['', '', '', '', '', '', '', '', '', '', '', ''],
-        # Row 15: Section
+        # Row 17: Section
         ['═══════════════════════════════════════════════════════', '', '', '', '', '', '', '', '', '', '', ''],
-        # Row 16: Top Earners Header
-        ['🏆 TOP 10 VERDIENER (AKTUELLE WOCHE)', '', '', '', '', '', '', '', '', '', '', ''],
-        # Row 17: Table Header
-        ['Rang', 'Username', 'Anzahl Logs', 'Verdienst €', '', '', '', '', '', '', '', ''],
-        # Row 18-27: Placeholder für Top 10 (werden nicht dynamisch gefüllt in Sheets)
-        ['1.', '-', '-', '-', '', '', '', '', '', '', '', ''],
-        ['2.', '-', '-', '-', '', '', '', '', '', '', '', ''],
-        ['3.', '-', '-', '-', '', '', '', '', '', '', '', ''],
+        # Row 18: Plantagen Header
+        ['🌱 AKTIVE PLANTAGEN', '', '', '', '', '', '', '', '', '', '', ''],
+        # Row 19: Plantagen Stats
+        ['Aktive Plantagen:', '=COUNTIF(\'🌱 Plantagen\'!G:G,"Aktiv")', '', 'Fertige Plantagen:', '=COUNTIF(\'🌱 Plantagen\'!G:G,"Fertig")', '', 'Geerntete Plantagen:', '=COUNTIF(\'🌱 Plantagen\'!G:G,"Geerntet")', '', '', '', ''],
     ]
     
     try:
         body = {'values': dashboard_data}
         service.spreadsheets().values().update(
             spreadsheetId=SPREADSHEET_ID,
-            range='📊 Dashboard!A1:L21',
+            range='📊 Dashboard!A1:L19',
             valueInputOption='USER_ENTERED',
             body=body
         ).execute()
@@ -389,7 +411,7 @@ def design_dashboard_tab(service, sheet_id):
                         'backgroundColor': COLORS['primary'],
                         'textFormat': {
                             'foregroundColor': COLORS['white'],
-                            'fontSize': 16,
+                            'fontSize': 14,
                             'bold': True,
                             'fontFamily': 'Roboto'
                         },
@@ -409,8 +431,8 @@ def design_dashboard_tab(service, sheet_id):
             }
         })
         
-        # Section Headers (Row 3, 9, 16)
-        for row in [2, 8, 15]:
+        # Section Headers (Row 3, 9, 18)
+        for row in [2, 8, 17]:
             requests.append({
                 'repeatCell': {
                     'range': {'sheetId': sheet_id, 'startRowIndex': row, 'endRowIndex': row+1, 'startColumnIndex': 0, 'endColumnIndex': 12},
@@ -428,24 +450,23 @@ def design_dashboard_tab(service, sheet_id):
                 }
             })
         
-        # Table Headers (Row 10, 17)
-        for row in [9, 16]:
-            requests.append({
-                'repeatCell': {
-                    'range': {'sheetId': sheet_id, 'startRowIndex': row, 'endRowIndex': row+1, 'startColumnIndex': 0, 'endColumnIndex': 6},
-                    'cell': {
-                        'userEnteredFormat': {
-                            'backgroundColor': COLORS['accent'],
-                            'textFormat': {
-                                'foregroundColor': COLORS['dark'],
-                                'fontSize': 10,
-                                'bold': True
-                            }
+        # Table Headers (Row 10)
+        requests.append({
+            'repeatCell': {
+                'range': {'sheetId': sheet_id, 'startRowIndex': 9, 'endRowIndex': 10, 'startColumnIndex': 0, 'endColumnIndex': 6},
+                'cell': {
+                    'userEnteredFormat': {
+                        'backgroundColor': COLORS['accent'],
+                        'textFormat': {
+                            'foregroundColor': COLORS['dark'],
+                            'fontSize': 10,
+                            'bold': True
                         }
-                    },
-                    'fields': 'userEnteredFormat'
-                }
-            })
+                    }
+                },
+                'fields': 'userEnteredFormat'
+            }
+        })
         
         # Werte-Zellen Styling
         requests.append({
@@ -748,11 +769,158 @@ def design_archiv_tab(service, sheet_id):
         return False
 
 
+def design_plantagen_tab(service, sheet_id):
+    """Premium Design für Plantagen Tab - NEU"""
+    print("\n🌱 Designe Plantagen Tab...")
+    
+    # Header
+    headers = [['User-ID', 'Username', 'Gestartet am', 'Countdown (Sek)', 'Letzter Check', 'Letztes Düngen', 'Status', 'Fertig am', 'Nächstes Düngen']]
+    
+    body = {'values': headers}
+    service.spreadsheets().values().update(
+        spreadsheetId=SPREADSHEET_ID,
+        range='🌱 Plantagen!A1:I1',
+        valueInputOption='RAW',
+        body=body
+    ).execute()
+    
+    requests = []
+    
+    # Header Styling - Green Theme
+    requests.append({
+        'repeatCell': {
+            'range': {'sheetId': sheet_id, 'startRowIndex': 0, 'endRowIndex': 1, 'startColumnIndex': 0, 'endColumnIndex': 9},
+            'cell': {
+                'userEnteredFormat': {
+                    'backgroundColor': COLORS['green'],
+                    'textFormat': {
+                        'foregroundColor': COLORS['white'],
+                        'fontSize': 11,
+                        'bold': True,
+                        'fontFamily': 'Roboto'
+                    },
+                    'horizontalAlignment': 'CENTER',
+                    'verticalAlignment': 'MIDDLE'
+                }
+            },
+            'fields': 'userEnteredFormat'
+        }
+    })
+    
+    # Zebra Striping mit grünen Tönen
+    requests.append({
+        'addConditionalFormatRule': {
+            'rule': {
+                'ranges': [{'sheetId': sheet_id, 'startRowIndex': 1, 'endRowIndex': 1000, 'startColumnIndex': 0, 'endColumnIndex': 9}],
+                'booleanRule': {
+                    'condition': {
+                        'type': 'CUSTOM_FORMULA',
+                        'values': [{'userEnteredValue': '=MOD(ROW(),2)=0'}]
+                    },
+                    'format': {'backgroundColor': COLORS['green_light']}
+                }
+            },
+            'index': 0
+        }
+    })
+    
+    # Status Highlighting
+    # Aktiv = Grün
+    requests.append({
+        'addConditionalFormatRule': {
+            'rule': {
+                'ranges': [{'sheetId': sheet_id, 'startColumnIndex': 6, 'endColumnIndex': 7, 'startRowIndex': 1, 'endRowIndex': 1000}],
+                'booleanRule': {
+                    'condition': {'type': 'TEXT_CONTAINS', 'values': [{'userEnteredValue': 'Aktiv'}]},
+                    'format': {
+                        'backgroundColor': {'red': 0.8, 'green': 1.0, 'blue': 0.8},
+                        'textFormat': {'foregroundColor': {'red': 0.0, 'green': 0.6, 'blue': 0.0}, 'bold': True}
+                    }
+                }
+            },
+            'index': 1
+        }
+    })
+    
+    # Fertig = Gold
+    requests.append({
+        'addConditionalFormatRule': {
+            'rule': {
+                'ranges': [{'sheetId': sheet_id, 'startColumnIndex': 6, 'endColumnIndex': 7, 'startRowIndex': 1, 'endRowIndex': 1000}],
+                'booleanRule': {
+                    'condition': {'type': 'TEXT_CONTAINS', 'values': [{'userEnteredValue': 'Fertig'}]},
+                    'format': {
+                        'backgroundColor': {'red': 1.0, 'green': 0.95, 'blue': 0.6},
+                        'textFormat': {'foregroundColor': {'red': 0.6, 'green': 0.4, 'blue': 0.0}, 'bold': True}
+                    }
+                }
+            },
+            'index': 2
+        }
+    })
+    
+    # Geerntet = Purple
+    requests.append({
+        'addConditionalFormatRule': {
+            'rule': {
+                'ranges': [{'sheetId': sheet_id, 'startColumnIndex': 6, 'endColumnIndex': 7, 'startRowIndex': 1, 'endRowIndex': 1000}],
+                'booleanRule': {
+                    'condition': {'type': 'TEXT_CONTAINS', 'values': [{'userEnteredValue': 'Geerntet'}]},
+                    'format': {
+                        'backgroundColor': COLORS['light'],
+                        'textFormat': {'foregroundColor': COLORS['primary'], 'bold': True}
+                    }
+                }
+            },
+            'index': 3
+        }
+    })
+    
+    # Column Widths
+    widths = [150, 140, 160, 120, 160, 160, 100, 160, 160]
+    for i, width in enumerate(widths):
+        requests.append({
+            'updateDimensionProperties': {
+                'range': {'sheetId': sheet_id, 'dimension': 'COLUMNS', 'startIndex': i, 'endIndex': i+1},
+                'properties': {'pixelSize': width},
+                'fields': 'pixelSize'
+            }
+        })
+    
+    # Freeze Header
+    requests.append({
+        'updateSheetProperties': {
+            'properties': {'sheetId': sheet_id, 'gridProperties': {'frozenRowCount': 1}},
+            'fields': 'gridProperties.frozenRowCount'
+        }
+    })
+    
+    # Row Height für Header
+    requests.append({
+        'updateDimensionProperties': {
+            'range': {'sheetId': sheet_id, 'dimension': 'ROWS', 'startIndex': 0, 'endIndex': 1},
+            'properties': {'pixelSize': 40},
+            'fields': 'pixelSize'
+        }
+    })
+    
+    try:
+        body = {'requests': requests}
+        service.spreadsheets().batchUpdate(spreadsheetId=SPREADSHEET_ID, body=body).execute()
+        print("✅ Plantagen Tab gestylt!")
+        return True
+    except Exception as e:
+        print(f"❌ Fehler: {e}")
+        return False
+
+
 def add_data_validation(service, sheets):
     """Füge Dropdown-Menüs und Validierung hinzu"""
     print("\n🔧 Füge Data Validation hinzu...")
     
     logs_id = sheets.get('Logs')
+    plantagen_id = sheets.get('🌱 Plantagen')
+    
     if not logs_id:
         return False
     
@@ -774,7 +942,9 @@ def add_data_validation(service, sheets):
                     'values': [
                         {'userEnteredValue': 'Düngen'},
                         {'userEnteredValue': 'Reparieren'},
-                        {'userEnteredValue': 'Panel platziert'}
+                        {'userEnteredValue': 'Panel platziert'},
+                        {'userEnteredValue': 'Plantage gesät'},
+                        {'userEnteredValue': 'Plantage geerntet'}
                     ]
                 },
                 'showCustomUi': True,
@@ -782,6 +952,32 @@ def add_data_validation(service, sheets):
             }
         }
     })
+    
+    # Status Dropdown in Plantagen Tab
+    if plantagen_id:
+        requests.append({
+            'setDataValidation': {
+                'range': {
+                    'sheetId': plantagen_id,
+                    'startRowIndex': 1,
+                    'endRowIndex': 1000,
+                    'startColumnIndex': 6,
+                    'endColumnIndex': 7
+                },
+                'rule': {
+                    'condition': {
+                        'type': 'ONE_OF_LIST',
+                        'values': [
+                            {'userEnteredValue': 'Aktiv'},
+                            {'userEnteredValue': 'Fertig'},
+                            {'userEnteredValue': 'Geerntet'}
+                        ]
+                    },
+                    'showCustomUi': True,
+                    'strict': True
+                }
+            }
+        })
     
     try:
         body = {'requests': requests}
@@ -796,8 +992,8 @@ def add_data_validation(service, sheets):
 def main():
     """Main function"""
     print("\n" + "="*70)
-    print("  💜 METALLIC PURPLE SHEETS DESIGNER v2.1.0")
-    print("  Classic Purple • Dark Chrome • Metallic Lilac")
+    print("  💜 METALLIC PURPLE SHEETS DESIGNER v2.2.0")
+    print("  Classic Purple • Dark Chrome • Metallic Lilac • Ananas-Plantagen")
     print("="*70 + "\n")
     
     service = init_sheets()
@@ -832,19 +1028,24 @@ def main():
         design_archiv_tab(service, sheets['Archiv'])
         time.sleep(0.5)
     
+    if '🌱 Plantagen' in sheets:
+        design_plantagen_tab(service, sheets['🌱 Plantagen'])
+        time.sleep(0.5)
+    
     # Add data validation
     add_data_validation(service, sheets)
     
     # Summary
     print("\n" + "="*70)
-    print("  🎉 METALLIC PURPLE DESIGN KOMPLETT!")
+    print("  🎉 METALLIC PURPLE + PLANTAGEN DESIGN KOMPLETT!")
     print("="*70)
     print("\n  ✨ Dein Google Sheet erstrahlt jetzt in Metallic Purple!\n")
     print("  📋 Tabs erstellt/gestylt:")
-    print("     • Logs (Premium Purple Design)")
-    print("     • 📊 Dashboard (Live-Formeln & Statistiken)")
+    print("     • Logs (Premium Purple Design + Plantagen)")
+    print("     • 📊 Dashboard (Live-Formeln & Statistiken + Plantagen-Stats)")
     print("     • Auszahlungen (Gold Theme)")
     print("     • Archiv (Dark Chrome Theme)")
+    print("     • 🌱 Plantagen (Green Theme) ← NEU!")
     print("\n  🎨 Features:")
     print("     • Metallic Purple Farbpalette")
     print("     • Chrome/Öl Effekt Styling")
@@ -853,6 +1054,7 @@ def main():
     print("     • Dropdown-Menüs")
     print("     • Zebra Striping")
     print("     • Frozen Headers")
+    print("     • Plantagen-Tracking ← NEU!")
     print("\n" + "="*70 + "\n")
 
 
